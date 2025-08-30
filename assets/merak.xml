@@ -1,60 +1,148 @@
-<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .track { stroke:#888; stroke-width:6; fill:none; }
-    .wesel { stroke:#333; stroke-width:4; fill:none; transition:0.3s; }
-    .signal-red { fill:red; }
-    .signal-green { fill:#00ff00; }
-    .station { fill:#bbb; stroke:#555; }
-    .platform-label { font-size:20px; text-anchor:middle; font-family:Arial; }
-  </style>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- merak.svg - Redraw skematis Stasiun Merak (untuk prototipe interaktif) -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1000" height="1400" viewBox="0 0 1000 1400" preserveAspectRatio="xMidYMid meet">
 
-  <!-- Background -->
-  <rect width="100%" height="100%" fill="#f0f0f0"/>
+  <defs>
+    <style type="text/css"><![CDATA[
+      .track { fill:none; stroke:#c92b2b; stroke-width:18; stroke-linecap:round; }
+      .track-locked { fill:none; stroke:#9aa0a6; stroke-width:14; stroke-dasharray:18 10; stroke-linecap:round; opacity:0.6; }
+      .switch-line { stroke:#222; stroke-width:6; stroke-linecap:round; }
+      .station-box { fill:#666; opacity:0.95; stroke:#444; stroke-width:2; }
+      .sig-bg { fill:#111; rx:6; ry:6; opacity:0.9; }
+      .sig-light { stroke:#222; stroke-width:1; }
+      .sig-label { font-family: Arial, Helvetica, sans-serif; font-size:28px; fill:#fff; pointer-events:none; }
+      .txt { font-family: Arial, Helvetica, sans-serif; font-size:28px; fill:#111; }
+      .note { font-family: Arial; font-size:20px; fill:#333; }
+      .platform { fill:#bdbdbd; opacity:0.9; stroke:#999; stroke-width:1; }
+      .train-loco { fill:#e11d1d; stroke:#801010; stroke-width:2; }
+      .train-car  { fill:#cfcfcf; stroke:#9a9a9a; stroke-width:1; }
+    ]]></style>
 
-  <!-- Legenda -->
-  <text x="700" y="30" font-family="Arial" font-size="16">Legenda</text>
-  <text x="700" y="50" font-family="Arial" font-size="18" fill="#007bff">Pel. Merak</text>
-  <text x="650" y="580" font-family="Arial" font-size="18">→ ke Krenceng</text>
+    <!-- marker arrow for track direction (optional decorative) -->
+    <marker id="mArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c92b2b" />
+    </marker>
+  </defs>
 
-  <!-- Track utama -->
-  <path id="track1" class="track" d="M 300 100 V 500" />
-  <path id="track2" class="track" d="M 400 100 V 450" />
-  <path id="track3" class="track" d="M 500 100 V 450" />
+  <!-- Background guide (light grid) -->
+  <rect x="0" y="0" width="1000" height="1400" fill="#fff" />
 
-  <!-- Throat bawah -->
-  <path id="throat" class="track" d="M 350 540 V 600" />
+  <!-- Draw tracks as smooth curves to resemble legend shape -->
+  <!-- Track 1 (Left) - Sepur Belok (used for run-around / parking) -->
+  <path id="track1" class="track"
+        d="M 160 1300
+           C 160 1000, 160 750, 220 640
+           C 260 570, 280 520, 300 460
+           L 300 290" />
 
-  <!-- Wesel -->
-  <path id="wesel1" class="wesel" d="M 300 500 Q 320 520 350 540" data-pos="lurus" />
-  <path id="wesel2" class="wesel" d="M 400 450 Q 380 500 350 540" data-pos="lurus" />
-  <path id="wesel3" class="wesel" d="M 500 450 Q 450 500 350 540" />
+  <!-- Track 2 (Middle) - Sepur Lurus (main) -->
+  <path id="track2" class="track"
+        d="M 420 1300
+           C 420 950, 420 700, 420 530
+           C 420 460, 420 420, 420 300" />
 
-  <!-- Sinyal -->
-  <g id="S1">
-    <rect x="275" y="480" width="10" height="20" fill="#333" />
-    <circle class="signal-red" cx="280" cy="490" r="5" />
+  <!-- Track 3 (Right) - Present but locked/not used -->
+  <path id="track3" class="track-locked"
+        d="M 640 1300
+           C 640 980, 640 760, 620 600
+           C 610 540, 590 460, 580 320" />
+
+  <!-- Wesel / switches (throat) visually connecting incoming throat to each track -->
+  <!-- Wesel A: connects throat to Track2 (straight) or Track1 (left) -->
+  <path id="weselA-straight" class="switch-line" d="M 390 520 L 420 480" />
+  <path id="weselA-branch" class="switch-line" d="M 390 520 L 300 560" />
+
+  <!-- Wesel B: connects throat to Track3 (right) -->
+  <path id="weselB-straight" class="switch-line" d="M 450 440 L 560 380" />
+
+  <!-- Emplasemen / station platforms - approximate positions between tracks -->
+  <rect id="platform1" class="platform" x="240" y="350" width="400" height="60" rx="6" ry="6" />
+  <rect id="station-building" class="station-box" x="300" y="380" width="320" height="120" rx="8" ry="8" />
+  <text x="360" y="450" class="txt" fill="#fff">Stasiun Merak</text>
+
+  <!-- Labels (direction) -->
+  <text x="120" y="200" class="note">Akses dermaga penumpang</text>
+  <text x="760" y="300" class="note" text-anchor="end">ke Krenceng →</text>
+
+  <!-- Signals: left/right sets. Each signal group has a dark rectangle "cabinet" and a colored light. -->
+  <!-- Sinyal Masuk (from Krenceng, bottom side near throat) -->
+  <g id="signal-S_in" transform="translate(380,1180)">
+    <rect class="sig-bg" x="-28" y="-28" width="56" height="56" rx="8" ry="8" />
+    <circle id="S_in_light" class="sig-light" cx="0" cy="0" r="18" fill="#b91c1c" />
+    <text x="0" y="46" class="note" text-anchor="middle">S-IN</text>
   </g>
-  <g id="S2">
-    <rect x="375" y="430" width="10" height="20" fill="#333" />
-    <circle class="signal-red" cx="380" cy="440" r="5" />
-  </g>
-  <g id="S4">
-    <rect x="325" y="550" width="10" height="20" fill="#333" />
-    <circle class="signal-red" cx="330" cy="560" r="5" />
-  </g>
-  <g id="S5">
-    <rect x="365" y="80" width="10" height="20" transform="rotate(180 370 90)" fill="#333" />
-    <circle class="signal-red" cx="370" cy="90" r="5" />
+
+  <!-- Sinyal Keluar Track1 (top left) -->
+  <g id="signal-S1" transform="translate(260,240)">
+    <rect class="sig-bg" x="-28" y="-28" width="56" height="56" rx="8" ry="8" />
+    <circle id="S1_light" class="sig-light" cx="0" cy="0" r="18" fill="#b91c1c" />
+    <text x="0" y="46" class="note" text-anchor="middle">S1</text>
   </g>
 
-  <!-- Bangunan stasiun -->
-  <rect x="305" y="150" width="90" height="250" class="station"/>
-  <text x="350" y="275" class="platform-label">1</text>
-  <rect x="405" y="150" width="90" height="250" class="station"/>
-  <text x="450" y="275" class="platform-label">2 & 3</text>
-
-  <!-- Kereta (pakai rect biar portable) -->
-  <g id="kereta" transform="translate(288,400)">
-    <rect width="24" height="40" fill="#e11d1d" stroke="#801010"/>
+  <!-- Sinyal Keluar Track2 (top mid) -->
+  <g id="signal-S2" transform="translate(420,240)">
+    <rect class="sig-bg" x="-28" y="-28" width="56" height="56" rx="8" ry="8" />
+    <circle id="S2_light" class="sig-light" cx="0" cy="0" r="18" fill="#b91c1c" />
+    <text x="0" y="46" class="note" text-anchor="middle">S2</text>
   </g>
+
+  <!-- Sinyal Keluar Track3 (top right - locked) -->
+  <g id="signal-S3" transform="translate(600,260)" opacity="0.55">
+    <rect class="sig-bg" x="-28" y="-28" width="56" height="56" rx="8" ry="8" />
+    <circle id="S3_light" class="sig-light" cx="0" cy="0" r="18" fill="#6b7280" />
+    <text x="0" y="46" class="note" text-anchor="middle">S3 (locked)</text>
+  </g>
+
+  <!-- Additional approach signals near bottom for each track (illustrative) -->
+  <g id="signal-bottom-left" transform="translate(160,1320)">
+    <rect class="sig-bg" x="-24" y="-24" width="48" height="48" rx="6" ry="6" />
+    <circle id="S_left" cx="0" cy="0" r="14" fill="#b91c1c" />
+    <text x="0" y="36" class="note" text-anchor="middle">S-L</text>
+  </g>
+
+  <g id="signal-bottom-mid" transform="translate(420,1320)">
+    <rect class="sig-bg" x="-24" y="-24" width="48" height="48" rx="6" ry="6" />
+    <circle id="S_mid" cx="0" cy="0" r="14" fill="#b91c1c" />
+    <text x="0" y="36" class="note" text-anchor="middle">S-M</text>
+  </g>
+
+  <g id="signal-bottom-right" transform="translate(640,1320)">
+    <rect class="sig-bg" x="-24" y="-24" width="48" height="48" rx="6" ry="6" />
+    <circle id="S_right" cx="0" cy="0" r="14" fill="#9aa0a6" />
+    <text x="0" y="36" class="note" text-anchor="middle">S-R</text>
+  </g>
+
+  <!-- Visual indicator for locked Track3 -->
+  <g id="locked-note" transform="translate(720,200)">
+    <rect x="-8" y="-20" width="220" height="40" rx="8" fill="#f59e0b" opacity="0.94" />
+    <text x="0" y="6" class="note">Jalur 3 - Terkunci (tidak operasional)</text>
+  </g>
+
+  <!-- Hidden path elements used for train movement (one per usable route) -->
+  <!-- Path for approach -> track2 (straight) -->
+  <path id="path_route_track2" d="M 420 1320 C 420 900, 420 700, 420 520 C 420 460, 420 420, 420 350"
+        fill="none" stroke="transparent" stroke-width="2" />
+
+  <!-- Path for approach -> track1 (via branch) -->
+  <path id="path_route_track1" d="M 420 1320 C 390 980, 350 760, 320 620 C 300 560, 280 520, 270 460"
+        fill="none" stroke="transparent" stroke-width="2" />
+
+  <!-- Path for approach -> track3 (locked) -->
+  <path id="path_route_track3" d="M 420 1320 C 470 980, 520 760, 540 620 C 560 540, 560 460, 560 360"
+        fill="none" stroke="transparent" stroke-width="2" />
+
+  <!-- Placeholder train group (initially positioned off-canvas near bottom) -->
+  <g id="train" transform="translate(-200,1400)" visibility="hidden">
+    <!-- loco -->
+    <rect id="loco" x="-40" y="-14" width="80" height="28" rx="6" class="train-loco" />
+    <!-- cars -->
+    <rect class="train-car" x="-140" y="-11" width="90" height="22" rx="5" />
+    <rect class="train-car" x="-250" y="-11" width="90" height="22" rx="5" />
+  </g>
+
+  <!-- Controls overlay hint -->
+  <text x="40" y="1360" class="note">Tip: S-IN = sinyal masuk; Buka S-IN + S1/S2 lalu jalankan kereta</text>
+
 </svg>
