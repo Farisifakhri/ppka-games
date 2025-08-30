@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulasi PPKA - Stasiun Merak</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>🚉 Simulasi PPKA Stasiun Merak</h2>
+
+  <div id="panel">
+    <button onclick="toggleSignal('S1')">Toggle S1</button>
+    <button onclick="toggleSignal('S2')">Toggle S2</button>
+    <button onclick="toggleSignal('S4')">Toggle S4</button>
+    <button onclick="toggleWesel('wesel1')">Switch Wesel 1</button>
+    <button onclick="toggleWesel('wesel2')">Switch Wesel 2</button>
+    <button onclick="jalankanKereta()">Jalankan Kereta 🚂</button>
+  </div>
+
+  <div id="map">
+    <!-- load svg -->
+    <object id="stasiun" type="image/svg+xml" data="assets/merak.svg"></object>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
