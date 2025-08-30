@@ -1,65 +1,51 @@
-let svgDoc; // isi SVG
-let signals = {};
-let wesels = {};
+// Pastikan variabel svgDocument sudah didefinisikan dan mendapatkan elemen SVG root
+let svgDocument; // Ini harus didapatkan dari `object` onload
 
-// tunggu svg selesai load
-document.getElementById("stasiun").addEventListener("load", function () {
-  svgDoc = this.contentDocument;
+document.getElementById("stasiun").addEventListener("load", function() {
+    svgDocument = this.contentDocument;
 
-  // ambil sinyal
-  ["S1", "S2", "S3", "S4", "S5", "S6"].forEach(id => {
-    signals[id] = svgDoc.getElementById(id);
-  });
+    // --- Definisi fungsi lainnya di sini ---
+    // (misalnya toggleSignal, toggleWesel)
 
-  // ambil wesel
-  ["wesel1", "wesel2"].forEach(id => {
-    wesels[id] = svgDoc.getElementById(id);
-  });
+    // Dapatkan elemen lokomotif dari SVG
+    const keretaLokomotif = svgDocument.getElementById("kereta-lokomotif");
+    
+    // Periksa apakah lokomotif ditemukan
+    if (!keretaLokomotif) {
+        console.error("Elemen 'kereta-lokomotif' tidak ditemukan di SVG.");
+        return; // Hentikan fungsi jika tidak ditemukan
+    }
+
+    // Fungsi jalankanKereta yang baru
+    function jalankanKereta() {
+        console.log("Kereta dijalankan!");
+
+        // Inisialisasi posisi awal (baca dari SVG)
+        let currentY = parseFloat(keretaLokomotif.getAttribute("y"));
+        let currentX = parseFloat(keretaLokomotif.getAttribute("x"));
+
+        // Kecepatan pergerakan (dalam piksel per interval)
+        const speed = 2; // Bisa disesuaikan
+
+        // Jarak yang ingin ditempuh (misal, keluar layar ke bawah)
+        const targetY = 650; // Lebih jauh dari tinggi SVG
+        
+        const animationInterval = setInterval(() => {
+            if (currentY < targetY) {
+                currentY += speed;
+                keretaLokomotif.setAttribute("y", currentY);
+            } else {
+                clearInterval(animationInterval); // Hentikan animasi saat mencapai target
+                console.log("Kereta telah keluar dari stasiun.");
+                // Mungkin bisa reset posisi kereta kembali ke awal jika ingin dimainkan lagi
+                // keretaLokomotif.setAttribute("y", "400"); 
+                // keretaLokomotif.setAttribute("x", "288"); 
+            }
+        }, 30); // Interval 30ms
+
+    }
+
+    // --- Sambungkan ke tombol "Jalankan Kereta" ---
+    document.getElementById("btnJalankanKereta").addEventListener("click", jalankanKereta);
+
 });
-
-// ubah warna sinyal
-function toggleSignal(id) {
-  if (!signals[id]) return;
-  if (signals[id].classList.contains("signal-red")) {
-    signals[id].classList.remove("signal-red");
-    signals[id].classList.add("signal-green");
-  } else {
-    signals[id].classList.remove("signal-green");
-    signals[id].classList.add("signal-red");
-  }
-}
-
-// ganti posisi wesel
-function toggleWesel(id) {
-  if (!wesels[id]) return;
-  let el = wesels[id];
-  if (el.getAttribute("data-pos") === "belok") {
-    el.setAttribute("x2", parseInt(el.getAttribute("x2")) - 50); // lurus
-    el.setAttribute("data-pos", "lurus");
-  } else {
-    el.setAttribute("x2", parseInt(el.getAttribute("x2")) + 50); // belok
-    el.setAttribute("data-pos", "belok");
-  }
-}
-
-// animasi kereta
-function jalankanKereta() {
-  if (!svgDoc) return;
-  let svg = svgDoc.querySelector("svg");
-
-  // bikin kereta (lok + gerbong)
-  let kereta = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  kereta.setAttribute("x", 140);
-  kereta.setAttribute("y", 520);
-  kereta.setAttribute("width", 20);
-  kereta.setAttribute("height", 10);
-  kereta.setAttribute("fill", "blue");
-  svg.appendChild(kereta);
-
-  let y = 520;
-  let interval = setInterval(() => {
-    y -= 2;
-    kereta.setAttribute("y", y);
-    if (y <= 100) clearInterval(interval);
-  }, 50);
-}

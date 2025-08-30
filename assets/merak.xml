@@ -1,0 +1,60 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .track { stroke:#888; stroke-width:6; fill:none; }
+    .wesel { stroke:#333; stroke-width:4; fill:none; transition:0.3s; }
+    .signal-red { fill:red; }
+    .signal-green { fill:#00ff00; }
+    .station { fill:#bbb; stroke:#555; }
+    .platform-label { font-size:20px; text-anchor:middle; font-family:Arial; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f0f0f0"/>
+
+  <!-- Legenda -->
+  <text x="700" y="30" font-family="Arial" font-size="16">Legenda</text>
+  <text x="700" y="50" font-family="Arial" font-size="18" fill="#007bff">Pel. Merak</text>
+  <text x="650" y="580" font-family="Arial" font-size="18">→ ke Krenceng</text>
+
+  <!-- Track utama -->
+  <path id="track1" class="track" d="M 300 100 V 500" />
+  <path id="track2" class="track" d="M 400 100 V 450" />
+  <path id="track3" class="track" d="M 500 100 V 450" />
+
+  <!-- Throat bawah -->
+  <path id="throat" class="track" d="M 350 540 V 600" />
+
+  <!-- Wesel -->
+  <path id="wesel1" class="wesel" d="M 300 500 Q 320 520 350 540" data-pos="lurus" />
+  <path id="wesel2" class="wesel" d="M 400 450 Q 380 500 350 540" data-pos="lurus" />
+  <path id="wesel3" class="wesel" d="M 500 450 Q 450 500 350 540" />
+
+  <!-- Sinyal -->
+  <g id="S1">
+    <rect x="275" y="480" width="10" height="20" fill="#333" />
+    <circle class="signal-red" cx="280" cy="490" r="5" />
+  </g>
+  <g id="S2">
+    <rect x="375" y="430" width="10" height="20" fill="#333" />
+    <circle class="signal-red" cx="380" cy="440" r="5" />
+  </g>
+  <g id="S4">
+    <rect x="325" y="550" width="10" height="20" fill="#333" />
+    <circle class="signal-red" cx="330" cy="560" r="5" />
+  </g>
+  <g id="S5">
+    <rect x="365" y="80" width="10" height="20" transform="rotate(180 370 90)" fill="#333" />
+    <circle class="signal-red" cx="370" cy="90" r="5" />
+  </g>
+
+  <!-- Bangunan stasiun -->
+  <rect x="305" y="150" width="90" height="250" class="station"/>
+  <text x="350" y="275" class="platform-label">1</text>
+  <rect x="405" y="150" width="90" height="250" class="station"/>
+  <text x="450" y="275" class="platform-label">2 & 3</text>
+
+  <!-- Kereta (pakai rect biar portable) -->
+  <g id="kereta" transform="translate(288,400)">
+    <rect width="24" height="40" fill="#e11d1d" stroke="#801010"/>
+  </g>
+</svg>
