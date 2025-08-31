@@ -1,160 +1,68 @@
-<svg width="1400" height="1000" viewBox="0 0 1400 1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="1200" height="1600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <style>
-      .track {
-        fill: none;
-        stroke: #b91c1c; /* Warna merah untuk jalur */
-        stroke-width: 12; /* Ketebalan jalur */
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .track-grey {
-        fill: none;
-        stroke: #9aa0a6; /* Warna abu-abu untuk jalur tidak aktif/parkir */
-        stroke-width: 12;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .signal-post {
-        fill: #333;
-        stroke: #000;
-        stroke-width: 2;
-      }
-      .signal-red { fill: #b91c1c; } /* Merah */
-      .signal-green { fill: #22c55e; } /* Hijau */
-      .building {
-        fill: #666;
-        stroke: #333;
-        stroke-width: 2;
-      }
-      .platform {
-        fill: #888;
-        stroke: #555;
-        stroke-width: 2;
-      }
-      .wesel-switch {
-        fill: #333;
-        stroke: #000;
-        stroke-width: 2;
-      }
-      .train-car {
-        fill: #3b82f6; /* Warna biru untuk gerbong */
-        stroke: #1e3a8a;
-        stroke-width: 2;
-      }
-      .train-loco {
-        fill: #ef4444; /* Warna merah untuk lokomotif */
-        stroke: #b91c1c;
-        stroke-width: 2;
-      }
+      /* Gaya untuk rel kereta, wesel, peron, sinyal, dll. */
+      .track, .wesel-path { fill:none; stroke:#94a3b8; stroke-width:18; stroke-linecap:round; }
+      .wesel-path { transition: opacity 0.3s ease-in-out; } /* Transisi untuk animasi wesel bergerak */
+      .platform { fill:#e2e8f0; stroke:#94a3b8; stroke-width:2; }
+      .sig-bg { fill:#1e293b; rx:6; ry:6; }
+      .sig-light { stroke:#0f172a; stroke-width:1; fill: #ef4444; } /* Warna default lampu (Merah) */
+      .txt { font-family: Arial, Helvetica, sans-serif; font-size:32px; fill:#0f172a; }
+      .hidden { opacity: 0; pointer-events: none; } /* Kelas untuk menyembunyikan elemen */
     </style>
-
-    <g id="wesel-symbol">
-        <path d="M-8 0 L8 0" stroke="black" stroke-width="2"/>
-        <path d="M-8 -5 L-2 0 L-8 5" stroke="black" stroke-width="2"/>
-        <path d="M8 -5 L2 0 L8 5" stroke="black" stroke-width="2"/>
+    
+    <g id="station-building-icon" transform="scale(1.5)">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#475569"/>
     </g>
-
-    <g id="ferry-symbol">
-      <path d="M0 -15 L-15 0 L15 0 Z" fill="#333"/>
-      <rect x="-20" y="-3" width="40" height="6" fill="#666"/>
-      <circle cx="-10" cy="-6" r="3" fill="#333"/>
-      <circle cx="10" cy="-6" r="3" fill="#333"/>
+    <g id="locomotive-shape">
+        <rect x="-40" y="-15" width="80" height="30" rx="5" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
     </g>
-
-    <g id="signal">
-        <rect class="signal-post" x="-5" y="-30" width="10" height="40" rx="3" ry="3"/>
-        <circle id="signal_light_default" cx="0" cy="-20" r="8" class="signal-red"/>
-    </g>
-
-    <g id="train-car-unit" transform="scale(0.8)">
-      <rect x="-30" y="-10" width="60" height="20" rx="5" ry="5" class="train-car"/>
-      <circle cx="-20" cy="12" r="4" fill="black"/>
-      <circle cx="20" cy="12" r="4" fill="black"/>
-    </g>
-
-    <g id="locomotive-unit" transform="scale(0.8)">
-      <rect x="-35" y="-12" width="70" height="24" rx="5" ry="5" class="train-loco"/>
-      <polygon points="-35,-12 -25,-20 25,-20 35,-12" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
-      <circle cx="-25" cy="14" r="4" fill="black"/>
-      <circle cx="25" cy="14" r="4" fill="black"/>
+    <g id="carriage-shape">
+        <rect x="-40" y="-15" width="80" height="30" rx="5" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2"/>
     </g>
   </defs>
 
-  <rect x="0" y="0" width="1400" height="1000" fill="#fff" />
+  <rect x="0" y="0" width="1200" height="1600" fill="#f8fafc" />
 
-  <path id="track_access" class="track" d="M 120 490 L 250 490 C 280 490, 310 520, 310 560 L 310 650" />
-  <path id="track_parking_grey" class="track-grey" d="M 310 650 L 310 750 C 310 780, 280 810, 250 810 L 120 810"/>
-  
-  <path id="path_route_track1" class="track"
-        d="M 120 340 L 250 340
-           C 280 340, 310 370, 310 410 L 310 460
-           C 310 490, 340 520, 370 520 L 480 520" /> 
-  
-  <path id="path_route_track2" class="track"
-        d="M 120 640 L 250 640
-           C 280 640, 310 610, 310 570 L 310 460
-           C 310 430, 340 400, 370 400 L 480 400" />
-  
-  <path id="track3_main" class="track" d="M 120 190 L 250 190 C 280 190, 310 220, 310 260 L 310 300"/>
-  <path id="track3_parking_grey" class="track-grey" d="M 310 300 L 310 400 C 310 430, 340 460, 370 460 L 480 460"/>
+  <path class="track" d="M 500 1550 L 500 1300"/>
+  <path class="track" d="M 400 1150 L 400 200" />
+  <path class="track" d="M 600 1050 L 600 200" />
+  <path class="track" d="M 800 950 L 800 200" />
 
-  <use xlink:href="#wesel-symbol" transform="translate(250, 640) scale(1.5) rotate(0)"/> 
-  <use xlink:href="#wesel-symbol" transform="translate(250, 340) scale(1.5) rotate(0)"/> 
-  <use xlink:href="#wesel-symbol" transform="translate(250, 190) scale(1.5) rotate(0)"/> 
-  <use xlink:href="#wesel-symbol" transform="translate(310, 460) scale(1.5) rotate(90)"/> 
+  <path id="W1_to_J1" class="wesel-path hidden" d="M 500 1300 L 400 1150"/>
+  <path id="W1_to_J2J3" class="wesel-path" d="M 500 1300 L 600 1150"/>
+  <path id="W2_to_J2" class="wesel-path" d="M 600 1150 L 600 1050"/>
+  <path id="W2_to_J3" class="wesel-path hidden" d="M 600 1150 L 800 950"/>
 
-  <rect x="480" y="380" width="100" height="160" class="building"/>
-  <text x="505" y="445" font-family="Arial, sans-serif" font-size="20" fill="white" font-weight="bold">1</text>
-  <text x="505" y="495" font-family="Arial, sans-serif" font-size="20" fill="white" font-weight="bold">2</text>
-  <text x="505" y="545" font-family="Arial, sans-serif" font-size="20" fill="white" font-weight="bold">3</text>
-  
-  <use xlink:href="#ferry-symbol" transform="translate(70, 50) scale(2)"/>
-  
-  <g transform="translate(100, 640)">
-      <use xlink:href="#signal"/>
-      <circle id="S_in_light" cx="0" cy="-20" r="8" class="signal-red"/>
-  </g>
-  <g transform="translate(100, 490)">
-      <use xlink:href="#signal"/>
-      <circle id="S_access_light" cx="0" cy="-20" r="8" class="signal-red"/>
-  </g>
-  <g transform="translate(100, 340)">
-      <use xlink:href="#signal"/>
-      <circle id="S1_light" cx="0" cy="-20" r="8" class="signal-red"/>
-  </g>
-  
-  <g transform="translate(400, 350)"> <use xlink:href="#signal"/>
-      <circle id="S2_light" cx="0" cy="-20" r="8" class="signal-red"/>
-  </g>
-  
-  <g transform="translate(100, 190)">
-      <use xlink:href="#signal"/>
-      <circle id="S3_light" cx="0" cy="-20" r="8" class="signal-red"/>
-  </g>
+  <rect x="382" y="180" width="36" height="20" fill="#333"/>
+  <rect x="582" y="180" width="36" height="20" fill="#333"/>
+  <rect x="782" y="180" width="36" height="20" fill="#333"/>
 
-  <g id="train" visibility="hidden" transform="translate(0,0) rotate(90)">
-    <use xlink:href="#locomotive-unit" transform="translate(-10, 0)"/>
-    <use xlink:href="#train-car-unit" transform="translate(30, 0)"/>
-    <use xlink:href="#train-car-unit" transform="translate(70, 0)"/>
-  </g>
+  <rect class="platform" x="450" y="200" width="100" height="850" rx="10"/>
+  <text class="txt" x="460" y="250">Jalur 1</text>
+  <rect class="platform" x="650" y="200" width="100" height="850" rx="10"/>
+  <text class="txt" x="660" y="250">Jalur 2</text>
+  <use xlink:href="#station-building-icon" transform="translate(820, 400)"/>
 
-  <g id="dynamic-legend" transform="translate(1100, 40)">
-    <rect x="0" y="0" width="280" height="130" fill="#f5f5f5" stroke="#666" stroke-width="2" rx="8" />
-    <text x="15" y="30" font-family="Arial, sans-serif" font-size="22" font-weight="bold">Legenda Status</text>
-    <text x="15" y="60" font-family="Arial, sans-serif" font-size="18">Posisi Wesel:</text>
-    <text id="legend-wesel-status" x="140" y="60" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#c92b2b">LURUS (Jalur 2)</text>
-    <circle id="indicator-jalur2" cx="25" cy="90" r="6" fill="#22c55e" />
-    <text x="40" y="95" font-family="Arial, sans-serif" font-size="18">Rute ke Jalur 2</text>
-    <circle id="indicator-jalur1" cx="25" cy="115" r="6" fill="#9aa0a6" />
-    <text x="40" y="120" font-family="Arial, sans-serif" font-size="18">Rute ke Jalur 1</text>
-  </g>
+  <g transform="translate(500,1350)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S_in" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S-Masuk</text></g>
+  <g transform="translate(400,1200)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S1_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S1-Keluar</text></g>
+  <g transform="translate(600,1100)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S2_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S2-Keluar</text></g>
+  <g transform="translate(800,1000)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S3_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S3-Keluar</text></g>
+  <g transform="translate(400,220)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S1_badug" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="-60" text-anchor="middle">Langsir 1</text></g>
+  <g transform="translate(600,220)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S2_badug" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="-60" text-anchor="middle">Langsir 2</text></g>
 
-  <text x="1200" y="80" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">Legenda</text>
-  <text x="1200" y="110" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">Pel. Merak</text>
-  <text x="80" y="20" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">akses masuk</text>
-  <text x="80" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">dermaga</text>
-  <text x="80" y="80" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">penumpang</text>
-  <text x="80" y="110" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">Pel. Merak</text>
-  <text x="1200" y="950" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">ke Krenceng</text>
+  <path id="route_masuk_J2" d="M 500 1580 L 500 1300 L 600 1150 L 600 250" fill="none" stroke="transparent"/>
+  <path id="route_J2_to_badug" d="M 600 250 L 600 1050" fill="none" stroke="transparent"/>
+  <path id="route_badug_to_krenceng_via_J1" d="M 600 250 L 600 1150 L 400 1150 L 500 1300 L 500 1580" fill="none" stroke="transparent"/>
+  <path id="route_krenceng_to_J2" d="M 500 1580 L 500 1300 L 600 1150 L 600 950" fill="none" stroke="transparent"/>
+  
+  <g id="train" visibility="hidden" transform="translate(500, 1580) rotate(90)">
+    <g id="locomotive">
+      <use xlink:href="#locomotive-shape" />
+    </g>
+    <g id="carriages" transform="translate(90, 0)">
+      <use xlink:href="#carriage-shape"/>
+      <use xlink:href="#carriage-shape" transform="translate(90, 0)"/>
+    </g>
+  </g>
 </svg>

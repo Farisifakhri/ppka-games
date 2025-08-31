@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Simulasi PPKA - Stasiun Merak</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Simulasi PPKA - Stasiun Merak</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
-  <h2>🚉 Simulasi PPKA Stasiun Merak</h2>
-
-  <div id="panel">
-  <button id="btn-toggle-s1">Toggle S1</button>
-  <button id="btn-toggle-s2">Toggle S2</button>
-  <button id="btn-toggle-s_in">Toggle S-IN</button> 
-  <button id="btn-toggle-s_access">Toggle S-Access</button> <button id="btn-toggle-s3">Toggle S3</button>             <button id="btn-switch-wesel1">Switch Wesel 1</button>
-  <button id="btn-switch-wesel2">Switch Wesel 2</button>
-  <button id="btn-jalankan-kereta">Jalankan Kereta 🚂</button>
-</div>
-
-  <div id="map">
-    <!-- load svg -->
-    <object id="stasiun" type="image/svg+xml" data="assets/merak.xml"></object>
-  </div>
-
-  <script src="script.js"></script>
+    <div id="control-panel">
+        </div>
+    <div id="game-area">
+        <div id="map">
+            <object id="stasiun" type="image/svg+xml" data="assets/merak.xml"></object>
+        </div>
+        <div id="info-panel">
+            <div id="status-board">
+                <h3><i class="fa-solid fa-tower-broadcast"></i> Live Status</h3>
+                <div id="wesel-status-display"></div>
+                <div id="signal-status-display"></div>
+            </div>
+            <div id="log-board">
+                <h3><i class="fa-solid fa-clipboard-list"></i> Activity Log</h3>
+                <ol id="activity-log"></ol>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>

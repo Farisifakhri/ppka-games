@@ -1,134 +1,102 @@
-// Menunggu seluruh halaman HTML siap
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("Halaman HTML selesai dimuat. Menunggu SVG...");
     const stasiunObject = document.getElementById("stasiun");
-
-    if (!stasiunObject) {
-        console.error("Elemen <object> dengan ID 'stasiun' tidak ditemukan!");
-        return;
-    }
-
+    const controlPanel = document.getElementById("control-panel");
+    
     stasiunObject.addEventListener("load", function() {
-        console.log("SVG berhasil dimuat! Mulai inisialisasi game...");
         const svgDoc = stasiunObject.contentDocument;
+        if (!svgDoc) return;
 
-        if (!svgDoc) {
-            console.error("Gagal mengakses dokumen SVG.");
-            return;
-        }
-
-        // === KUMPULKAN SEMUA ELEMEN INTERAKTIF DARI SVG ===
+        // KUMPULKAN SEMUA ELEMEN PENTING
         const signals = {
-            S1: svgDoc.getElementById("S1_light"),
-            S2: svgDoc.getElementById("S2_light"), // Sekarang seharusnya ditemukan
-            S3: svgDoc.getElementById("S3_light"),
-            S_in: svgDoc.getElementById("S_in_light"),
-            S_access: svgDoc.getElementById("S_access_light")
+            S_in: { light: svgDoc.getElementById("S_in"), name: "Sinyal Masuk" },
+            S1_out: { light: svgDoc.getElementById("S1_out"), name: "S1 Keluar" },
+            S2_out: { light: svgDoc.getElementById("S2_out"), name: "S2 Keluar" },
+            S3_out: { light: svgDoc.getElementById("S3_out"), name: "S3 Keluar" },
+            S1_badug: { light: svgDoc.getElementById("S1_badug"), name: "Langsir 1" },
+            S2_badug: { light: svgDoc.getElementById("S2_badug"), name: "Langsir 2" }
         };
-        console.log("Elemen sinyal:", signals);
-
+        const wesels = {
+            W1_to_J1: svgDoc.getElementById("W1_to_J1"), W1_to_J2J3: svgDoc.getElementById("W1_to_J2J3"),
+            W2_to_J2: svgDoc.getElementById("W2_to_J2"), W2_to_J3: svgDoc.getElementById("W2_to_J3")
+        };
         const train = svgDoc.getElementById("train");
+        const locomotive = svgDoc.getElementById("locomotive");
+        const carriages = svgDoc.getElementById("carriages");
         const rute = {
-            jalur1: svgDoc.getElementById("path_route_track1"), // Pastikan ID ini ada di XML
-            jalur2: svgDoc.getElementById("path_route_track2")  // Pastikan ID ini ada di XML
+            masuk_J2: svgDoc.getElementById('route_masuk_J2'), J2_to_badug: svgDoc.getElementById('route_J2_to_badug'),
+            badug_to_krenceng_via_J1: svgDoc.getElementById('route_badug_to_krenceng_via_J1'),
+            krenceng_to_J2: svgDoc.getElementById('route_krenceng_to_J2')
         };
-        const legend = {
-            weselStatus: svgDoc.getElementById("legend-wesel-status"),
-            indicatorJalur1: svgDoc.getElementById("indicator-jalur1"),
-            indicatorJalur2: svgDoc.getElementById("indicator-jalur2")
+        const info = {
+            state: document.getElementById('info-state'), action: document.getElementById('info-action'),
+            error: document.getElementById('info-error'), weselStatus: document.getElementById('wesel-status-display'),
+            signalStatus: document.getElementById('signal-status-display'), log: document.getElementById('activity-log')
         };
 
-        let ruteAktif = 'jalur2';
+        // MANAJEMEN STATUS GAME
+        let gameState = 'IDLE';
+        let wesel1Posisi = 'J2&J3';
+        let wesel2Posisi = 'J2';
+        let buttons = {};
 
-        // === FUNGSI-FUNGSI LOGIKA GAME ===
-        function updateLegend() {
-            if (!legend.weselStatus) return; // Pengaman jika legenda tidak ada
-            if (ruteAktif === 'jalur2') {
-                legend.weselStatus.textContent = "LURUS (Jalur 2)";
-                legend.indicatorJalur1.setAttribute("fill", "#9aa0a6");
-                legend.indicatorJalur2.setAttribute("fill", "#22c55e");
-            } else {
-                legend.weselStatus.textContent = "BELOK (Jalur 1)";
-                legend.indicatorJalur1.setAttribute("fill", "#22c55e");
-                legend.indicatorJalur2.setAttribute("fill", "#9aa0a6");
-            }
+        // FUNGSI-FUNGSI UTAMA
+        function logActivity(message) { /* ... */ }
+        function updateStatusDashboard() { /* ... */ }
+        function updateTombol() { /* ... */ }
+        function animateElement(element, path, duration, onEnd) { /* ... */ }
+        function checkSignal(signalId) { /* ... */ }
+        function gerakkanWesel1() { /* ... */ }
+        function gerakkanWesel2() { /* ... */ }
+        function toggleSignal(id) { /* ... */ }
+
+        // FUNGSI PEMBUATAN TOMBOL
+        function createButtons() {
+            controlPanel.innerHTML = `
+                <div class="button-group">
+                    <button id="btn-toggle-S_in" class="btn-signal"><i class="fa-solid fa-traffic-light"></i> S-Masuk</button>
+                    <button id="btn-toggle-S1_out" class="btn-signal"><i class="fa-solid fa-arrow-up"></i> S1-Keluar</button>
+                    <button id="btn-toggle-S2_out" class="btn-signal"><i class="fa-solid fa-arrow-up"></i> S2-Keluar</button>
+                    <button id="btn-toggle-S3_out" class="btn-signal"><i class="fa-solid fa-arrow-up"></i> S3-Keluar</button>
+                    <button id="btn-toggle-S1_badug" class="btn-signal-langsir"><i class="fa-solid fa-arrow-down"></i> Langsir 1</button>
+                    <button id="btn-toggle-S2_badug" class="btn-signal-langsir"><i class="fa-solid fa-arrow-down"></i> Langsir 2</button>
+                </div>
+                <div class="button-group">
+                    <button id="btn-switch-wesel1" class="btn-switch"><i class="fa-solid fa-code-branch"></i> Wesel 1</button>
+                    <button id="btn-switch-wesel2" class="btn-switch"><i class="fa-solid fa-code-branch"></i> Wesel 2</button>
+                </div>
+                <div class="button-group">
+                    <button id="btn-kereta-masuk" class="btn-action"><i class="fa-solid fa-train"></i> Kereta Masuk</button>
+                    <button id="btn-lepas-loko" class="btn-langsir" disabled><i class="fa-solid fa-unlink"></i> Lepas Loko</button>
+                    <button id="btn-langsir-via-j1" class="btn-langsir" disabled><i class="fa-solid fa-route"></i> Langsir via J1</button>
+                    <button id="btn-kembali-ke-rangkaian" class="btn-langsir" disabled><i class="fa-solid fa-link"></i> Kembali</button>
+                </div>
+            `;
+            // Setelah dibuat, kumpulkan lagi referensi elemen tombolnya
+            buttons = {
+                keretaMasuk: document.getElementById('btn-kereta-masuk'), lepasLoko: document.getElementById('btn-lepas-loko'),
+                langsirViaJ1: document.getElementById('btn-langsir-via-j1'), kembaliKeRangkaian: document.getElementById('btn-kembali-ke-rangkaian'),
+                wesel1: document.getElementById('btn-switch-wesel1'), wesel2: document.getElementById('btn-switch-wesel2')
+            };
+        }
+        
+        // SAMBUNGKAN SEMUA FUNGSI KE TOMBOL
+        function attachEventListeners() {
+            Object.keys(signals).forEach(id => {
+                const btn = document.getElementById(`btn-toggle-${id}`);
+                if (btn) btn.addEventListener("click", () => toggleSignal(id));
+            });
+            buttons.wesel1.addEventListener('click', gerakkanWesel1);
+            buttons.wesel2.addEventListener('click', gerakkanWesel2);
+            buttons.keretaMasuk.addEventListener('click', () => { /* ... logika kereta masuk ... */ });
+            buttons.lepasLoko.addEventListener('click', () => { /* ... logika lepas loko ... */ });
+            buttons.langsirViaJ1.addEventListener('click', () => { /* ... logika langsir ... */ });
+            buttons.kembaliKeRangkaian.addEventListener('click', () => { /* ... logika kembali ... */ });
         }
 
-        function toggleSignal(id) {
-            const light = signals[id];
-            if (!light) {
-                console.warn(`Sinyal dengan ID ${id} tidak ditemukan.`);
-                return;
-            }
-            const isRed = light.getAttribute("fill") === "#b91c1c";
-            light.setAttribute("fill", isRed ? "#22c55e" : "#b91c1c");
-            console.log(`Sinyal ${id} diubah menjadi ${isRed ? 'HIJAU' : 'MERAH'}`);
-        }
-
-        function toggleWesel(id) {
-            if (id === 'wesel1') {
-                ruteAktif = (ruteAktif === 'jalur2') ? 'jalur1' : 'jalur2';
-                console.log(`Wesel 1 diatur ke ${ruteAktif}`);
-                updateLegend();
-            }
-        }
-
-        function jalankanKereta() {
-            console.log("Tombol jalankan kereta ditekan. Mengecek kondisi...");
-            // Pengaman jika salah satu sinyal tidak ditemukan
-            if (!signals.S_in || !signals.S1 || !signals.S2) {
-                alert("Kesalahan: Ada elemen sinyal penting yang tidak ditemukan. Periksa kembali file SVG.");
-                return;
-            }
-
-            const sinyalMasukHijau = signals.S_in.getAttribute("fill") === "#22c55e";
-            const sinyalKeluarHijau = (ruteAktif === 'jalur1' && signals.S1.getAttribute("fill") === "#22c55e") ||
-                                      (ruteAktif === 'jalur2' && signals.S2.getAttribute("fill") === "#22c55e");
-
-            console.log(`Sinyal Masuk Hijau: ${sinyalMasukHijau}, Sinyal Keluar Hijau: ${sinyalKeluarHijau}`);
-
-            if (!sinyalMasukHijau || !sinyalKeluarHijau) {
-                alert("Sinyal belum aman! Pastikan S-IN dan sinyal keluar untuk rute yang dipilih (S1 atau S2) berwarna HIJAU.");
-                return;
-            }
-            
-            // ... sisa fungsi jalankanKereta (tidak ada perubahan) ...
-            const rutePilihan = rute[ruteAktif];
-            if (!rutePilihan) {
-                console.error(`Path rute untuk ${ruteAktif} tidak ditemukan!`);
-                return;
-            }
-            train.style.visibility = "visible";
-            const oldAnimation = train.querySelector("animateMotion");
-            if (oldAnimation) oldAnimation.remove();
-            const animate = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
-            animate.setAttribute("dur", "15s");
-            animate.setAttribute("begin", "indefinite");
-            animate.setAttribute("fill", "freeze");
-            animate.setAttribute("rotate", "auto");
-            animate.setAttribute("path", rutePilihan.getAttribute("d"));
-            train.appendChild(animate);
-            animate.beginElement();
-            setTimeout(() => {
-                train.style.visibility = "hidden";
-                const oldAnimation = train.querySelector("animateMotion");
-                if (oldAnimation) oldAnimation.remove();
-                console.log("Kereta sampai di tujuan.");
-            }, 15000);
-        }
-
-        updateLegend();
-
-        // === SAMBUNGKAN TOMBOL HTML KE FUNGSI JS ===
-        document.getElementById("btn-toggle-s1").addEventListener("click", () => toggleSignal('S1'));
-        document.getElementById("btn-toggle-s2").addEventListener("click", () => toggleSignal('S2'));
-        document.getElementById("btn-toggle-s3").addEventListener("click", () => toggleSignal('S3'));
-        document.getElementById("btn-toggle-s_in").addEventListener("click", () => toggleSignal('S_in'));
-        document.getElementById("btn-toggle-s_access").addEventListener("click", () => toggleSignal('S_access'));
-        document.getElementById("btn-switch-wesel1").addEventListener("click", () => toggleWesel('wesel1'));
-        document.getElementById("btn-switch-wesel2").addEventListener("click", () => alert("Logika wesel 2 belum dibuat!"));
-        document.getElementById("btn-jalankan-kereta").addEventListener("click", jalankanKereta);
-
-        console.log("Semua tombol berhasil terhubung!");
+        // INISIALISASI GAME
+        createButtons();
+        attachEventListeners();
+        logActivity("Simulasi PPKA Stasiun Merak dimulai.");
+        updateStatusDashboard();
     });
 });

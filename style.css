@@ -1,52 +1,75 @@
-/* Menghilangkan margin dan padding default dari browser */
+/* Tata Letak Utama */
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  overflow-y: auto; /* DIUBAH: Tampilkan scrollbar vertikal JIKA dibutuhkan */
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: #f1f5f9;
 }
+body { display: flex; flex-direction: column; }
 
-/* Mengatur layout utama menjadi 2 bagian: panel tombol dan peta */
-body {
-  display: flex;
-  flex-direction: column; /* Susun dari atas ke bawah */
-  text-align: center;
+/* Panel Kontrol Atas */
+#control-panel {
+  padding: 10px 15px; background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex; justify-content: center; align-items: center;
+  gap: 20px; flex-wrap: wrap;
 }
+.button-group { display: flex; gap: 8px; }
 
-#panel {
-  padding: 10px;
-  flex-shrink: 0; /* Panel tidak akan mengecil */
-}
-
+/* Tombol Umum */
 button {
-  margin: 5px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: #333;
-  color: white;
-  cursor: pointer;
+  padding: 10px 15px; border: none; border-radius: 6px;
+  color: white; cursor: pointer; font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s ease-in-out;
 }
+button:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+button:disabled { background-color: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
 
-button:hover {
-  background: #555;
-}
+/* Tombol Spesifik */
+.btn-signal { background-color: #475569; }
+.btn-signal-langsir { background-color: #4361ee; }
+.btn-switch { background-color: #fca311; }
+.btn-action { background-color: #008000; }
+.btn-langsir { background-color: #6a040f; }
 
-#map {
-  flex-grow: 1; /* Map akan mengisi sisa ruang yang tersedia */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  box-sizing: border-box;
+/* Area Utama Game */
+#game-area {
+  flex-grow: 1; display: flex; padding: 20px; gap: 20px;
+  min-height: 0;
 }
+#map { flex-grow: 1; display: flex; justify-content: center; align-items: center; min-width: 0; }
+#stasiun { width: 100%; height: 100%; }
 
-#stasiun {
-  width: 100%;
-  height: 100%;
-  border: 2px solid #999;
-  background: white;
+/* Panel Informasi */
+#info-panel {
+  width: 400px; flex-shrink: 0; background-color: #fff;
+  border: 1px solid #e2e8f0; border-radius: 8px;
+  display: flex; flex-direction: column;
 }
+#info-panel h3 {
+  margin: 0; padding: 15px 20px;
+  border-bottom: 1px solid #e2e8f0; color: #1e293b;
+  display: flex; align-items: center; gap: 10px; font-size: 16px;
+}
+#status-board, #log-board { display: flex; flex-direction: column; }
+#log-board { flex-grow: 1; min-height: 0; }
+#wesel-status-display, #signal-status-display { padding: 5px 20px; }
+#wesel-status-display p, #signal-status-display p {
+  margin: 8px 0; display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px;
+}
+#signal-status-display { border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+#activity-log {
+  list-style-type: none; padding: 0 20px; margin: 0;
+  flex-grow: 1; overflow-y: auto; font-size: 13px;
+}
+#activity-log li { padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+#activity-log li:last-child { border-bottom: none; }
+.status-light {
+    display: inline-block; width: 12px; height: 12px;
+    border-radius: 50%; border: 1px solid #0002;
+}
+.light-red { background-color: #ef4444; }
+.light-green { background-color: #22c55e; }
