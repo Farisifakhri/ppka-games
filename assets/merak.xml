@@ -42,9 +42,16 @@
   <g transform="translate(400,1200)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S1_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S1-Keluar</text></g>
   <g transform="translate(600,1100)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S2_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S2-Keluar</text></g>
   <g transform="translate(800,1000)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S3_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S3-Keluar</text></g>
-  <g transform="translate(400,220)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S1_badug" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="-60" text-anchor="middle">Langsir 1</text></g>
-  <g transform="translate(600,220)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S2_badug" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="-60" text-anchor="middle">Langsir 2</text></g>
-  <path id="route_masuk_J2" d="M 500 1580 L 500 1300 L 600 1150 L 600 250" fill="none" stroke="transparent"/>
+  <g transform="translate(400,220)">
+    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
+    <circle id="S1_langsir" class="sig-light" cx="0" cy="-20" r="12"/>
+    <text class="txt" y="-60" text-anchor="middle">Langsir 1</text>
+</g>
+<g transform="translate(600,220)">
+    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
+    <circle id="S2_langsir" class="sig-light" cx="0" cy="-20" r="12"/>
+    <text class="txt" y="-60" text-anchor="middle">Langsir 2</text>
+</g>
   <path id="route_J2_to_badug" d="M 600 250 L 600 1050" fill="none" stroke="transparent"/>
   <path id="route_badug_to_krenceng_via_J1" d="M 600 250 L 600 1150 L 400 1150 L 500 1300 L 500 1580" fill="none" stroke="transparent"/>
   <path id="route_krenceng_to_J2" d="M 500 1580 L 500 1300 L 600 1150 L 600 950" fill="none" stroke="transparent"/>
