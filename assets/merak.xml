@@ -1,61 +1,53 @@
 <svg width="1200" height="1600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <style>
-      /* Gaya untuk rel kereta, wesel, peron, sinyal, dll. */
       .track, .wesel-path { fill:none; stroke:#94a3b8; stroke-width:18; stroke-linecap:round; }
-      .wesel-path { transition: opacity 0.3s ease-in-out; } /* Transisi untuk animasi wesel bergerak */
+      .wesel-path { transition: opacity 0.3s ease-in-out; }
       .platform { fill:#e2e8f0; stroke:#94a3b8; stroke-width:2; }
       .sig-bg { fill:#1e293b; rx:6; ry:6; }
-      .sig-light { stroke:#0f172a; stroke-width:1; fill: #ef4444; } /* Warna default lampu (Merah) */
+      .sig-light { stroke:#0f172a; stroke-width:1; fill: #ef4444; }
       .txt { font-family: Arial, Helvetica, sans-serif; font-size:32px; fill:#0f172a; }
-      .hidden { opacity: 0; pointer-events: none; } /* Kelas untuk menyembunyikan elemen */
+      .hidden { opacity: 0; pointer-events: none; }
     </style>
-    
     <g id="station-building-icon" transform="scale(1.5)">
         <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#475569"/>
     </g>
+    
     <g id="locomotive-shape">
-        <rect x="-40" y="-15" width="80" height="30" rx="5" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+        <image href="assets/cc201.png" x="-50" y="-40" height="80px" width="100px"/>
     </g>
     <g id="carriage-shape">
         <rect x="-40" y="-15" width="80" height="30" rx="5" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2"/>
     </g>
   </defs>
-
+  
   <rect x="0" y="0" width="1200" height="1600" fill="#f8fafc" />
-
   <path class="track" d="M 500 1550 L 500 1300"/>
   <path class="track" d="M 400 1150 L 400 200" />
   <path class="track" d="M 600 1050 L 600 200" />
   <path class="track" d="M 800 950 L 800 200" />
-
   <path id="W1_to_J1" class="wesel-path hidden" d="M 500 1300 L 400 1150"/>
   <path id="W1_to_J2J3" class="wesel-path" d="M 500 1300 L 600 1150"/>
   <path id="W2_to_J2" class="wesel-path" d="M 600 1150 L 600 1050"/>
   <path id="W2_to_J3" class="wesel-path hidden" d="M 600 1150 L 800 950"/>
-
   <rect x="382" y="180" width="36" height="20" fill="#333"/>
   <rect x="582" y="180" width="36" height="20" fill="#333"/>
   <rect x="782" y="180" width="36" height="20" fill="#333"/>
-
   <rect class="platform" x="450" y="200" width="100" height="850" rx="10"/>
   <text class="txt" x="460" y="250">Jalur 1</text>
   <rect class="platform" x="650" y="200" width="100" height="850" rx="10"/>
   <text class="txt" x="660" y="250">Jalur 2</text>
   <use xlink:href="#station-building-icon" transform="translate(820, 400)"/>
-
   <g transform="translate(500,1350)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S_in" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S-Masuk</text></g>
   <g transform="translate(400,1200)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S1_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S1-Keluar</text></g>
   <g transform="translate(600,1100)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S2_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S2-Keluar</text></g>
   <g transform="translate(800,1000)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S3_out" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="70" text-anchor="middle">S3-Keluar</text></g>
   <g transform="translate(400,220)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S1_badug" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="-60" text-anchor="middle">Langsir 1</text></g>
   <g transform="translate(600,220)"><rect class="sig-bg" x="-20" y="-40" width="40" height="80"/><circle id="S2_badug" class="sig-light" cx="0" cy="-20" r="12"/><text class="txt" y="-60" text-anchor="middle">Langsir 2</text></g>
-
   <path id="route_masuk_J2" d="M 500 1580 L 500 1300 L 600 1150 L 600 250" fill="none" stroke="transparent"/>
   <path id="route_J2_to_badug" d="M 600 250 L 600 1050" fill="none" stroke="transparent"/>
   <path id="route_badug_to_krenceng_via_J1" d="M 600 250 L 600 1150 L 400 1150 L 500 1300 L 500 1580" fill="none" stroke="transparent"/>
   <path id="route_krenceng_to_J2" d="M 500 1580 L 500 1300 L 600 1150 L 600 950" fill="none" stroke="transparent"/>
-  
   <g id="train" visibility="hidden" transform="translate(500, 1580) rotate(90)">
     <g id="locomotive">
       <use xlink:href="#locomotive-shape" />
