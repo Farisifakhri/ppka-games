@@ -1,0 +1,89 @@
+/* --- Pengaturan Dasar & Font --- */
+html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    font-family: 'Roboto', sans-serif;
+    background-color: #eef2f9;
+    color: #334155;
+    overflow-y: auto; /* Memungkinkan scroll jika konten melebihi layar */
+}
+
+/* --- Header Game --- */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 25px;
+    background-color: #1e293b;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 20;
+    position: sticky; top: 0;
+}
+.game-header h2 { margin: 0; font-size: 1.2em; }
+.back-to-lobby-btn {
+    color: white; text-decoration: none; font-size: 0.9em;
+    padding: 8px 12px; border-radius: 6px;
+    background-color: #475569; transition: background-color 0.2s ease;
+}
+.back-to-lobby-btn:hover { background-color: #64748b; }
+
+/* --- Control Panel --- */
+#control-panel {
+    padding: 10px 15px; background-color: #ffffff;
+    border-bottom: 1px solid #d1d9e6;
+    display: flex; justify-content: center; align-items: center;
+    gap: 15px; flex-wrap: wrap; z-index: 10;
+    position: sticky; top: 54.5px; /* Sesuaikan dengan tinggi header */
+}
+
+/* --- Area Utama & Peta --- */
+#game-area {
+    display: flex; padding: 15px; gap: 15px;
+    min-height: 800px;
+}
+#map { flex-grow: 1; display: flex; justify-content: center; align-items: center; min-width: 0; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); overflow: hidden; }
+#stasiun { max-width: 100%; max-height: 100%; }
+
+/* --- Info Panel --- */
+#info-panel {
+    width: 450px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 15px;
+}
+.info-box { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.info-box.full-height { flex-grow: 1; min-height: 0; }
+.info-box h3 {
+    margin: 0; padding: 12px 18px; border-bottom: 1px solid #334155; color: #f1f5f9;
+    display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600;
+}
+#game-clock-display {
+    padding: 12px 20px; font-size: 1.5em; font-weight: bold; text-align: center;
+    background-color: #0f172a; color: #e2e8f0; border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+#wesel-status-display, #signal-status-display { padding: 8px 18px; }
+#signal-status-display { border-top: 1px solid #334155; margin-top: 8px; padding-top: 8px; }
+#wesel-status-display p, #signal-status-display p { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.status-light { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #0002; }
+.light-red { background-color: #ef4444; }
+.light-green { background-color: #22c55e; }
+#schedule-display { padding: 0; overflow-y: auto; }
+#schedule-display table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#schedule-display th, #schedule-display td { padding: 9px 18px; text-align: left; border-bottom: 1px solid #334155; }
+#schedule-display th { font-weight: 600; color: #94a3b8; position: sticky; top: 0; background: #1e293b; z-index: 1;}
+#schedule-display tr:last-child td { border-bottom: none; }
+#schedule-display tr.active-train td { background-color: #334155; font-weight: bold; color: #f1f5f9;}
+#log-board { flex-grow: 1; min-height: 0; }
+#activity-log { list-style-type: none; padding: 0 18px; margin: 0; flex-grow: 1; overflow-y: auto; font-size: 13px; }
+#activity-log li { padding: 9px 0; border-bottom: 1px solid #334155; color: #cbd5e1; }
+#activity-log li:last-child { border-bottom: none; }
+#activity-log li.error { color: #f87171; font-weight: bold; }
+
+/* Gaya Tombol di Control Panel */
+.btn-signal, .btn-signal-langsir, .btn-switch, .btn-action, .btn-langsir { padding: 9px 14px; border: 1px solid transparent; border-radius: 6px; color: white; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out; }
+.btn-signal:hover, .btn-signal-langsir:hover, .btn-switch:hover, .btn-action:hover, .btn-langsir:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-signal:disabled, .btn-signal-langsir:disabled, .btn-switch:disabled, .btn-action:disabled, .btn-langsir:disabled { background-color: #94a3b8; color: #e2e8f0; cursor: not-allowed; transform: none; box-shadow: none; border-color: #94a3b8; }
+.btn-signal { background-color: #475569; }
+.btn-signal-langsir { background-color: #4361ee; }
+.btn-switch { background-color: #fca311; }
+.btn-action { background-color: #16a34a; }
+.btn-langsir { background-color: #dc2626; }

@@ -1,75 +1,108 @@
-/* Tata Letak Utama */
+/* --- Import Font Futuristik --- */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400&display=swap');
+
+/* --- Latar Belakang & Animasi --- */
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 html, body {
-  margin: 0; padding: 0; height: 100%; width: 100%;
-  overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  background: #f1f5f9;
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    font-family: 'Poppins', sans-serif;
+    background: #0d1117; /* Warna dasar gelap */
+    color: #c9d1d9;
+    overflow: hidden;
 }
-body { display: flex; flex-direction: column; }
 
-/* Panel Kontrol Atas */
-#control-panel {
-  padding: 10px 15px; background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  display: flex; justify-content: center; align-items: center;
-  gap: 20px; flex-wrap: wrap;
+body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(-45deg, #0d1117, #010409, #161b22, #0d1117);
+    background-size: 400% 400%;
+    animation: gradient-animation 25s ease infinite;
+    z-index: -1;
 }
-.button-group { display: flex; gap: 8px; }
 
-/* Tombol Umum */
-button {
-  padding: 10px 15px; border: none; border-radius: 6px;
-  color: white; cursor: pointer; font-size: 14px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-  transition: all 0.2s ease-in-out;
+/* --- Struktur & Efek Glassmorphism --- */
+.screen {
+    display: none; position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.7s ease-in-out;
 }
-button:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-button:disabled { background-color: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
+.screen.active { display: flex; opacity: 1; }
 
-/* Tombol Spesifik */
-.btn-signal { background-color: #475569; }
-.btn-signal-langsir { background-color: #4361ee; }
-.btn-switch { background-color: #fca311; }
-.btn-action { background-color: #008000; }
-.btn-langsir { background-color: #6a040f; }
+.content-box {
+    background: rgba(13, 17, 23, 0.6);
+    border: 1px solid rgba(201, 209, 217, 0.1);
+    border-radius: 16px;
+    padding: 40px 50px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: center;
+}
 
-/* Area Utama Game */
-#game-area {
-  flex-grow: 1; display: flex; padding: 20px; gap: 20px;
-  min-height: 0;
+/* --- Layar Pemuatan (Loading Screen) --- */
+.loading-content h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3em; color: #f0f6fc;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5), 0 0 20px rgba(34, 197, 94, 0.3);
 }
-#map { flex-grow: 1; display: flex; justify-content: center; align-items: center; min-width: 0; }
-#stasiun { width: 100%; height: 100%; }
+.progress-bar-container { width: 300px; height: 8px; background-color: rgba(201, 209, 217, 0.1); border-radius: 4px; overflow: hidden; margin-top: 20px; }
+.progress-bar {
+    width: 0%; height: 100%;
+    background: #22c55e;
+    border-radius: 4px;
+    box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e;
+    transition: width 0.4s ease-out;
+}
 
-/* Panel Informasi */
-#info-panel {
-  width: 400px; flex-shrink: 0; background-color: #fff;
-  border: 1px solid #e2e8f0; border-radius: 8px;
-  display: flex; flex-direction: column;
+/* --- Layar Lobi (Main Menu) --- */
+.game-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4em; color: #f0f6fc; margin: 0;
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.5), 0 0 30px rgba(59, 130, 246, 0.3);
 }
-#info-panel h3 {
-  margin: 0; padding: 15px 20px;
-  border-bottom: 1px solid #e2e8f0; color: #1e293b;
-  display: flex; align-items: center; gap: 10px; font-size: 16px;
+.game-subtitle { font-size: 1.1em; color: #8b949e; margin-top: 5px; margin-bottom: 40px; }
+.menu-options { display: flex; flex-direction: column; gap: 15px; width: 300px; }
+
+/* Tombol Futuristik */
+.menu-btn {
+    padding: 15px 20px; font-size: 1.1em; font-weight: 500;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-radius: 8px; cursor: pointer;
+    background-color: transparent; color: #c9d1d9;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
-#status-board, #log-board { display: flex; flex-direction: column; }
-#log-board { flex-grow: 1; min-height: 0; }
-#wesel-status-display, #signal-status-display { padding: 5px 20px; }
-#wesel-status-display p, #signal-status-display p {
-  margin: 8px 0; display: flex; justify-content: space-between; align-items: center;
-  font-size: 14px;
+.menu-btn::before { /* Efek shine saat hover */
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.4s ease;
 }
-#signal-status-display { border-top: 1px dashed #cbd5e1; padding-top: 10px; }
-#activity-log {
-  list-style-type: none; padding: 0 20px; margin: 0;
-  flex-grow: 1; overflow-y: auto; font-size: 13px;
+.menu-btn:hover {
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    transform: translateY(-3px);
 }
-#activity-log li { padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-#activity-log li:last-child { border-bottom: none; }
-.status-light {
-    display: inline-block; width: 12px; height: 12px;
-    border-radius: 50%; border: 1px solid #0002;
+.menu-btn:hover::before { left: 100%; }
+.menu-btn.disabled {
+    border-color: rgba(139, 148, 158, 0.2);
+    color: #8b949e;
+    cursor: not-allowed;
+    opacity: 0.5;
 }
-.light-red { background-color: #ef4444; }
-.light-green { background-color: #22c55e; }
+.menu-btn.disabled:hover { transform: none; box-shadow: none; border-color: rgba(139, 148, 158, 0.2); }
+
+.lobby-footer { position: absolute; bottom: 20px; color: #8b949e; font-size: 0.9em; }
+

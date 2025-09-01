@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulasi Stasiun Merak - PPKA Games</title>
+    <link rel="stylesheet" href="game.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="game-header">
+        <h2><i class="fa-solid fa-train"></i> Simulasi Stasiun Merak</h2>
+        <a href="index.html" class="back-to-lobby-btn"><i class="fa-solid fa-house"></i> Kembali ke Lobi</a>
+    </header>
+    
+    <div id="control-panel">
+        <!-- Tombol-tombol akan dibuat oleh game.js -->
+    </div>
+    
+    <main id="game-area">
+        <div id="map">
+            <object id="stasiun" type="image/svg+xml" data="assets/merak.xml"></object>
+        </div>
+        <aside id="info-panel">
+            <div id="game-clock-display">Pukul 00:00</div>
+            <div class="info-box">
+                <h3><i class="fa-solid fa-tower-broadcast"></i> Live Status</h3>
+                <div id="wesel-status-display"></div>
+                <div id="signal-status-display"></div>
+            </div>
+            <div id="schedule-board" class="info-box">
+                <h3><i class="fa-solid fa-calendar-days"></i> Jadwal Kereta</h3>
+                <div id="schedule-display"></div>
+            </div>
+            <div id="log-board" class="info-box full-height">
+                <h3><i class="fa-solid fa-clipboard-list"></i> Activity Log</h3>
+                <ol id="activity-log"></ol>
+            </div>
+        </aside>
+    </main>
+    <script src="game.js"></script>
+</body>
+</html>

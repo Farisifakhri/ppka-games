@@ -2,29 +2,49 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Simulasi PPKA - Stasiun Merak</title>
+    <title>PPKA Games - Simulasi Kereta Api</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="control-panel">
-        </div>
-    <div id="game-area">
-        <div id="map">
-            <object id="stasiun" type="image/svg+xml" data="assets/merak.xml"></object>
-        </div>
-        <div id="info-panel">
-            <div id="status-board">
-                <h3><i class="fa-solid fa-tower-broadcast"></i> Live Status</h3>
-                <div id="wesel-status-display"></div>
-                <div id="signal-status-display"></div>
-            </div>
-            <div id="log-board">
-                <h3><i class="fa-solid fa-clipboard-list"></i> Activity Log</h3>
-                <ol id="activity-log"></ol>
+
+    <!-- LAYAR PEMUATAN (LOADING SCREEN) -->
+    <div id="loading-screen" class="screen active">
+        <div class="loading-content">
+            <h1>PPKA GAMES</h1>
+            <p>Memuat Aset...</p>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
             </div>
         </div>
     </div>
+
+    <!-- LAYAR LOBI (MAIN MENU) -->
+    <div id="lobby-screen" class="screen">
+        <div class="lobby-content">
+            <h1 class="game-title">PPKA GAMES</h1>
+            <p class="game-subtitle">Simulasi Pengatur Perjalanan Kereta Api</p>
+            <div class="menu-options">
+                <button id="new-game-btn" class="menu-btn">
+                    <i class="fa-solid fa-play"></i> Mulai Simulasi
+                </button>
+                <button class="menu-btn disabled" title="Segera Hadir">
+                    <i class="fa-solid fa-list-check"></i> Pilih Skenario
+                </button>
+                <button class="menu-btn disabled" title="Segera Hadir">
+                    <i class="fa-solid fa-gear"></i> Pengaturan
+                </button>
+            </div>
+             <footer class="lobby-footer">
+                <p>Dibuat oleh Farisifakhri & Gemini</p>
+            </footer>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
+
