@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function() {
         };
         const train = svgDoc.getElementById("train");
         const locomotive = svgDoc.getElementById("locomotive");
-        const carriages = svgDoc.getElementById("carriages");
         const rute = {
             masuk_J2: svgDoc.getElementById('route_masuk_J2'),
             J2_to_siding: svgDoc.getElementById('route_J2_to_siding'),
@@ -48,10 +47,14 @@ document.addEventListener("DOMContentLoaded", function() {
             scheduleDisplay: document.getElementById('schedule-display')
         };
         const currentLocoShapeRef = svgDoc.getElementById("current-loco-shape");
-        const controlPanel = document.getElementById("control-panel");
+        const tutorialBox = document.getElementById('tutorial-box');
+        const tutorialText = document.getElementById('tutorial-text');
+        const nextTutorialBtn = document.getElementById('next-tutorial-btn');
+        const closeTutorialBtn = document.getElementById('close-tutorial-btn');
 
         // --- MANAJEMEN STATUS GAME & WAKTU ---
-        let gameState = 'READY_TO_DEPART';
+        let gameState = 'TUTORIAL';
+        let tutorialStep = 0;
         let wesel1Posisi = 'J2&J3';
         let wesel2Posisi = 'J2';
         let wesel3Posisi = 'J2_STRAIGHT';
@@ -64,22 +67,81 @@ document.addEventListener("DOMContentLoaded", function() {
             { type: 'ARRIVAL', ka: '318', loco: 'CC203', time: '07:15', from: 'Rangkasbitung', to: 'Merak' },
             { type: 'DEPARTURE', ka: '319', loco: 'CC203', time: '07:45', from: 'Merak', to: 'Rangkasbitung'},
             { type: 'ARRIVAL', ka: '312', loco: 'CC206', time: '09:15', from: 'Rangkasbitung', to: 'Merak' },
-            { type: 'DEPARTURE', ka: '313', loco: 'CC206', time: '10:05', from: 'Merak', to: 'Rangkasbitung'},
-            { type: 'ARRIVAL', ka: '320', loco: 'CC201', time: '11:55', from: 'Rangkasbitung', to: 'Merak' },
-            { type: 'DEPARTURE', ka: '321', loco: 'CC201', time: '12:44', from: 'Merak', to: 'Rangkasbitung'},
-            { type: 'ARRIVAL', ka: '314', loco: 'CC206', time: '15:42', from: 'Rangkasbitung', to: 'Merak' },
-            { type: 'DEPARTURE', ka: '315', loco: 'CC206', time: '16:40', from: 'Merak', to: 'Rangkasbitung'},
-            { type: 'ARRIVAL', ka: '322', loco: 'CC203', time: '18:30', from: 'Rangkasbitung', to: 'Merak' },
-            { type: 'DEPARTURE', ka: '323', loco: 'CC203', time: '19:00', from: 'Merak', to: 'Rangkasbitung'},
-            { type: 'ARRIVAL', ka: '316', loco: 'CC201', time: '20:50', from: 'Rangkasbitung', to: 'Merak' },
-            { type: 'DEPARTURE', ka: '317', loco: 'CC201', time: '21:20', from: 'Merak', to: 'Rangkasbitung'},
-            { type: 'ARRIVAL', ka: '324', loco: 'CC206', time: '23:10', from: 'Rangkasbitung', to: 'Merak' }
         ];
 
+        // --- SISTEM TUTORIAL ---
+        const tutorialSteps = [
+            { text: "Selamat datang, PPKA! Tugas pertama: berangkatkan KA 311. Klik tombol sinyal 'S2-Keluar' untuk memberi aspek aman (hijau).", elementId: 'btn-toggle-S2_out', isAction: true },
+            { text: "Sinyal aman! Sekarang, klik tombol 'Berangkatkan' untuk mengirim KA 311.", elementId: 'btn-berangkatkan-kereta', isAction: true },
+            { text: "Kereta berhasil berangkat! Lapor ke stasiun berikutnya dengan klik 'Lapor St. Berikutnya'.", elementId: 'btn-lapor-krenceng', isAction: true },
+            { text: "Laporan terkirim. Kita akan menunggu KA 318 tiba pukul 07:15. Jam akan berjalan cepat. Perhatikan panel jadwal.", elementId: null, isAction: false },
+            { text: "Perhatian! KA 318 akan masuk. Beri aspek aman dengan klik sinyal 'S-Masuk'.", elementId: 'btn-toggle-S_in', isAction: true },
+            { text: "Rute aman. Klik 'Kereta Masuk' untuk memasukkan KA 318 ke stasiun.", elementId: 'btn-kereta-masuk', isAction: true },
+            { text: "Tutorial selesai! Anda sekarang bebas mengoperasikan stasiun. Selamat bertugas, PPKA!", elementId: null, isAction: false }
+        ];
+
+        function showTutorialStep(stepIndex) {
+            // Hapus highlight dari tombol sebelumnya
+            document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+
+            if (stepIndex >= tutorialSteps.length) {
+                tutorialBox.style.display = 'none';
+                return;
+            }
+
+            const step = tutorialSteps[stepIndex];
+            tutorialText.textContent = step.text;
+            tutorialBox.style.display = 'block';
+
+            // Tampilkan tombol 'Mengerti' atau sembunyikan jika ini langkah aksi
+            nextTutorialBtn.style.display = step.isAction ? 'none' : 'inline-block';
+
+            // Tambahkan highlight ke tombol yang relevan
+            if (step.elementId) {
+                const targetElement = document.getElementById(step.elementId);
+                if (targetElement) {
+                    targetElement.classList.add('tutorial-highlight');
+                }
+            }
+        }
+
+        function advanceTutorial() {
+            tutorialStep++;
+            if (tutorialStep < tutorialSteps.length) {
+                showTutorialStep(tutorialStep);
+                // Jika langkah berikutnya adalah menunggu, langsung nonaktifkan tombol
+                if(!tutorialSteps[tutorialStep].isAction) updateTombol();
+            } else {
+                // Tutorial selesai
+                tutorialBox.style.display = 'none';
+                document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+                gameState = 'WAITING_FOR_NEXT_TRAIN'; // Lanjutkan alur game normal
+                logActivity("Tutorial Selesai. Mode normal diaktifkan.");
+                updateTombol();
+            }
+        }
+        
+        function endTutorial() {
+            tutorialBox.style.display = 'none';
+            document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+            gameState = 'READY_TO_DEPART'; // Reset ke state awal non-tutorial
+            logActivity("Tutorial dilewati. Mode normal diaktifkan.");
+            updateTombol();
+        }
+
+        nextTutorialBtn.addEventListener('click', advanceTutorial);
+        closeTutorialBtn.addEventListener('click', endTutorial);
+
         // --- FUNGSI-FUNGSI GAME ---
+        function formatTime(date) {
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
         function logActivity(message, isError = false) {
             const li = document.createElement('li');
-            li.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            li.textContent = `[${formatTime(gameTime)}] ${message}`;
             if (isError) { li.classList.add('error'); }
             info.log.insertBefore(li, info.log.firstChild);
         }
@@ -89,24 +151,42 @@ document.addEventListener("DOMContentLoaded", function() {
                                           <p><strong>Wesel 2:</strong> ${wesel2Posisi === 'J2' ? 'LURUS (ke J2)' : 'BELOK (ke J3)'}</p>
                                           <p><strong>Wesel 3:</strong> ${wesel3Posisi === 'J1_SIDING' ? 'BELOK (ke Sepur Badug)' : 'LURUS (di Jalur 2)'}</p>`;
             info.signalStatus.innerHTML = Object.values(signals).map(data => {
-                if (!data.light) return `<p>${data.name}: <span style="color: grey;">Tidak Ditemukan</span></p>`;
                 const isGreen = data.light.getAttribute('fill') === '#22c55e';
                 return `<p>${data.name}: <span class="status-light ${isGreen ? 'light-green' : 'light-red'}"></span></p>`;
             }).join('');
         }
 
         function updateTombol() {
-            buttons.keretaMasuk.disabled = gameState !== 'IDLE';
-            buttons.lepasLoko.disabled = gameState !== 'ARRIVED_ON_J2';
-            buttons.langsirKeluar.disabled = gameState !== 'LOCO_ON_SIDING';
-            buttons.kembaliKeRangkaian.disabled = gameState !== 'LOCO_SHUNTED';
-            buttons.berangkatkanKereta.disabled = gameState !== 'READY_TO_DEPART';
-            buttons.laporKrenceng.disabled = gameState !== 'TRAIN_DEPARTED';
+            const isAnimating = gameState === 'ANIMATING';
+            const isTutorialAction = gameState === 'TUTORIAL' && tutorialSteps[tutorialStep] && tutorialSteps[tutorialStep].isAction;
+
+            Object.values(buttons).forEach(btn => {
+                if (btn) {
+                    // Nonaktifkan semua tombol jika animasi berjalan atau jika tutorial menunggu aksi
+                    btn.disabled = isAnimating || isTutorialAction;
+                }
+            });
+
+            if (isTutorialAction) {
+                // Aktifkan hanya tombol yang disorot tutorial
+                const targetId = tutorialSteps[tutorialStep].elementId;
+                if (targetId && buttons[targetId.replace('btn-', '')]) {
+                    document.getElementById(targetId).disabled = false;
+                }
+            } else if (!isAnimating && gameState !== 'TUTORIAL') {
+                // Logika enable/disable normal di luar tutorial
+                buttons.keretaMasuk.disabled = gameState !== 'IDLE';
+                buttons.lepasLoko.disabled = gameState !== 'ARRIVED_ON_J2';
+                buttons.langsirKeluar.disabled = gameState !== 'LOCO_ON_SIDING';
+                buttons.kembaliKeRangkaian.disabled = gameState !== 'LOCO_SHUNTED';
+                buttons.berangkatkanKereta.disabled = gameState !== 'READY_TO_DEPART';
+                buttons.laporKrenceng.disabled = gameState !== 'TRAIN_DEPARTED';
+            }
         }
         
         function animateElement(element, path, duration, onEnd) {
-            const oldAnimation = element.querySelector("animateMotion");
-            if (oldAnimation) oldAnimation.remove();
+            gameState = 'ANIMATING';
+            updateTombol();
             const animate = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
             animate.setAttribute("dur", `${duration}s`);
             animate.setAttribute("path", path.getAttribute("d"));
@@ -114,22 +194,38 @@ document.addEventListener("DOMContentLoaded", function() {
             animate.setAttribute("rotate", "auto");
             element.appendChild(animate);
             animate.beginElement();
-            setTimeout(onEnd, duration * 1000);
+            setTimeout(() => {
+                element.removeChild(animate);
+                onEnd();
+            }, duration * 1000);
         }
 
-        function checkSignal(signalId) {
-            const signalData = signals[signalId];
-            if (!signalData || !signalData.light) return false;
-            return signalData.light.getAttribute('fill') === '#22c55e';
+        function checkSignal(id) {
+            return signals[id].light.getAttribute('fill') === '#22c55e';
         }
 
-        function setSignal(id, color) {
+        function toggleSignal(id) {
+            if(gameState === 'ANIMATING') return;
             const signalData = signals[id];
-            if (!signalData || !signalData.light) return;
-            const targetColor = color === 'green' ? '#22c55e' : '#ef4444';
-            signalData.light.setAttribute("fill", targetColor);
-            logActivity(`Sinyal ${signalData.name} otomatis diatur ke ${color === 'green' ? 'AMAN' : 'BERHENTI'}.`);
+            const isRed = signalData.light.getAttribute("fill") === "#ef4444";
+            signalData.light.setAttribute("fill", isRed ? "#22c55e" : "#ef4444");
+            logActivity(`Sinyal ${signalData.name} diubah menjadi ${isRed ? 'AMAN (Hijau)' : 'BERHENTI (Merah)'}.`);
             updateStatusDashboard();
+            
+            if (gameState === 'TUTORIAL') {
+                const step = tutorialSteps[tutorialStep];
+                if (step.elementId === `btn-toggle-${id}`) {
+                    advanceTutorial();
+                    updateTombol();
+                } else {
+                    logActivity("Aksi tidak sesuai dengan tutorial!", true);
+                }
+            }
+        }
+
+        function gerakkanWesel(weselFunction) {
+            if(gameState === 'ANIMATING') return;
+            weselFunction();
         }
 
         function gerakkanWesel1() {
@@ -147,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function() {
             logActivity(`Wesel 2 diubah ke arah ${wesel2Posisi === 'J2' ? 'Jalur 2' : 'Jalur 3'}.`);
             updateStatusDashboard();
         }
-
+        
         function gerakkanWesel3() {
             wesel3Posisi = (wesel3Posisi === 'J2_STRAIGHT') ? 'J1_SIDING' : 'J2_STRAIGHT';
             wesels.W3_to_J2_straight.classList.toggle('hidden');
@@ -155,46 +251,24 @@ document.addEventListener("DOMContentLoaded", function() {
             logActivity(`Wesel 3 diubah ke arah ${wesel3Posisi === 'J1_SIDING' ? 'Sepur Badug J1' : 'Lurus J2'}.`);
             updateStatusDashboard();
         }
-
-        function toggleSignal(id) {
-            const signalData = signals[id];
-            if (!signalData || !signalData.light) return;
-            const isRed = signalData.light.getAttribute("fill") === "#ef4444";
-            signalData.light.setAttribute("fill", isRed ? "#22c55e" : "#ef4444");
-            logActivity(`Sinyal ${signalData.name} diubah menjadi ${isRed ? 'AMAN (Hijau)' : 'BERHENTI (Merah)'}.`);
-            updateStatusDashboard();
-        }
-
-        function formatTime(date) {
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${hours}:${minutes}`;
-        }
-
+        
         function updateGameClock() {
             gameTime.setSeconds(gameTime.getSeconds() + 6);
             info.gameClock.textContent = `Pukul ${formatTime(gameTime)}`;
-            if ((gameState === 'WAITING_FOR_NEXT_TRAIN' || gameState === 'IDLE' || gameState === 'ARRIVED_ON_J2') && currentEventIndex < schedule.length) {
+
+            if (currentEventIndex < schedule.length) {
                 const nextEvent = schedule[currentEventIndex];
                 const [eventHour, eventMinute] = nextEvent.time.split(':');
                 if (gameTime.getHours() >= parseInt(eventHour) && gameTime.getMinutes() >= parseInt(eventMinute)) {
-                    if (nextEvent.type === 'ARRIVAL') {
-                        if (gameState !== 'IDLE') {
-                            setLocoType(nextEvent.loco);
-                            logActivity(`PERHATIAN: KA ${nextEvent.ka} (${nextEvent.loco}) dari ${nextEvent.from} akan masuk. Siapkan rute!`);
+                    if ((gameState === 'WAITING_FOR_NEXT_TRAIN' || (gameState === 'TUTORIAL' && tutorialStep === 3)) && nextEvent.type === 'ARRIVAL') {
+                        setLocoType(nextEvent.loco);
+                        logActivity(`PERHATIAN: KA ${nextEvent.ka} (${nextEvent.loco}) dari ${nextEvent.from} akan masuk. Siapkan rute!`);
+                        if(gameState === 'TUTORIAL') {
+                            advanceTutorial();
+                            updateTombol();
+                        } else {
                             gameState = 'IDLE';
                             updateTombol();
-                            populateScheduleBoard();
-                        }
-                    } else if (nextEvent.type === 'DEPARTURE') {
-                        if (gameState !== 'READY_TO_DEPART') {
-                            setLocoType(nextEvent.loco);
-                            logActivity(`WAKTUNYA BERANGKAT: KA ${nextEvent.ka} (${nextEvent.loco}) ke ${nextEvent.to} siap diberangkatkan.`);
-                            gameState = 'READY_TO_DEPART';
-                            train.style.visibility = 'visible';
-                            locomotive.querySelector('use').setAttribute('transform', '');
-                            updateTombol();
-                            populateScheduleBoard();
                         }
                     }
                 }
@@ -219,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function() {
             html += '</tbody></table>';
             info.scheduleDisplay.innerHTML = html;
         }
-        
+
         function setLocoType(type) {
             let shapeId = '#loco-cc201-shape';
             switch (type.toUpperCase()) {
@@ -227,40 +301,67 @@ document.addEventListener("DOMContentLoaded", function() {
                 case 'CC203': shapeId = '#loco-cc203-shape'; break;
                 case 'CC206': shapeId = '#loco-cc206-shape'; break;
             }
-            if(currentLocoShapeRef) {
+            if (currentLocoShapeRef) {
                 currentLocoShapeRef.setAttribute('xlink:href', shapeId);
             }
         }
 
         function createButtons() {
+            const controlPanel = document.getElementById("control-panel");
             controlPanel.innerHTML = `
                 <div class="button-group">
-                    <button id="btn-toggle-S_in" class="btn-signal"><i class="fa-solid fa-traffic-light"></i> S-Masuk</button>
-                    <button id="btn-toggle-S1_out" class="btn-signal"><i class="fa-solid fa-arrow-up"></i> S1-Keluar</button>
-                    <button id="btn-toggle-S2_out" class="btn-signal"><i class="fa-solid fa-arrow-up"></i> S2-Keluar</button>
-                    <button id="btn-toggle-S1_langsir" class="btn-signal-langsir"><i class="fa-solid fa-person-walking-arrow-loop-left"></i> Langsir 1</button>
-                    <button id="btn-toggle-S2_langsir" class="btn-signal-langsir"><i class="fa-solid fa-person-walking-arrow-loop-left"></i> Langsir 2</button>
+                    <p>Sinyal</p>
+                    <button id="btn-toggle-S_in"><i class="fa-solid fa-traffic-light"></i> S-Masuk</button>
+                    <button id="btn-toggle-S1_out"><i class="fa-solid fa-arrow-up"></i> S1-Keluar</button>
+                    <button id="btn-toggle-S2_out"><i class="fa-solid fa-arrow-up"></i> S2-Keluar</button>
+                    <button id="btn-toggle-S3_out"><i class="fa-solid fa-arrow-up"></i> S3-Keluar</button>
                 </div>
                 <div class="button-group">
-                    <button id="btn-switch-wesel1" class="btn-switch"><i class="fa-solid fa-code-branch"></i> Wesel 1</button>
-                    <button id="btn-switch-wesel2" class="btn-switch"><i class="fa-solid fa-code-branch"></i> Wesel 2</button>
-                    <button id="btn-switch-wesel3" class="btn-switch"><i class="fa-solid fa-shuffle"></i> Wesel 3 (Langsir)</button>
+                    <p>Wesel</p>
+                    <button id="btn-switch-wesel1"><i class="fa-solid fa-code-branch"></i> Wesel 1</button>
+                    <button id="btn-switch-wesel2"><i class="fa-solid fa-code-branch"></i> Wesel 2</button>
+                    <button id="btn-switch-wesel3"><i class="fa-solid fa-shuffle"></i> Wesel 3</button>
                 </div>
                 <div class="button-group">
-                    <button id="btn-kereta-masuk" class="btn-action"><i class="fa-solid fa-train"></i> Kereta Masuk</button>
-                    <button id="btn-lepas-loko" class="btn-langsir" disabled><i class="fa-solid fa-unlink"></i> Lepas Loko</button>
-                    <button id="btn-langsir-keluar" class="btn-langsir" disabled><i class="fa-solid fa-route"></i> Langsir Keluar</button>
-                    <button id="btn-kembali-ke-rangkaian" class="btn-langsir" disabled><i class="fa-solid fa-link"></i> Kembali</button>
-                    <button id="btn-berangkatkan-kereta" class="btn-action" disabled><i class="fa-solid fa-train-tram"></i> Berangkatkan</button>
-                    <button id="btn-lapor-krenceng" class="btn-action" disabled><i class="fa-solid fa-phone-volume"></i> Lapor St. Berikutnya</button>
+                    <p>Langsir</p>
+                    <button id="btn-toggle-S1_langsir"><i class="fa-solid fa-person-walking-arrow-loop-left"></i> S-Langsir 1</button>
+                    <button id="btn-toggle-S2_langsir"><i class="fa-solid fa-person-walking-arrow-loop-left"></i> S-Langsir 2</button>
+                    <button id="btn-lepas-loko"><i class="fa-solid fa-unlink"></i> Lepas Loko</button>
+                    <button id="btn-langsir-keluar"><i class="fa-solid fa-route"></i> Langsir Keluar</button>
+                    <button id="btn-kembali-ke-rangkaian"><i class="fa-solid fa-link"></i> Kembali</button>
                 </div>
-            `;
+                <div class="button-group">
+                    <p>Aksi Utama</p>
+                    <button id="btn-kereta-masuk"><i class="fa-solid fa-train"></i> Kereta Masuk</button>
+                    <button id="btn-berangkatkan-kereta"><i class="fa-solid fa-train-tram"></i> Berangkatkan</button>
+                    <button id="btn-lapor-krenceng"><i class="fa-solid fa-phone-volume"></i> Lapor St. Berikutnya</button>
+                </div>`;
+
+             // Re-assign classes after innerHTML overwrite
+            document.querySelectorAll('#control-panel button').forEach(btn => {
+                const id = btn.id;
+                if (id.includes('-S_') || id.includes('-sinal')) {
+                    btn.classList.add('btn-signal');
+                } else if (id.includes('-langsir')) {
+                     btn.classList.add('btn-signal-langsir');
+                } else if (id.includes('-switch-')) {
+                    btn.classList.add('btn-switch');
+                } else if (id.includes('-lepas-') || id.includes('-keluar') || id.includes('-kembali-')) {
+                    btn.classList.add('btn-langsir');
+                } else {
+                    btn.classList.add('btn-action');
+                }
+            });
+
             buttons = {
                 keretaMasuk: document.getElementById('btn-kereta-masuk'), lepasLoko: document.getElementById('btn-lepas-loko'),
                 langsirKeluar: document.getElementById('btn-langsir-keluar'), kembaliKeRangkaian: document.getElementById('btn-kembali-ke-rangkaian'),
                 berangkatkanKereta: document.getElementById('btn-berangkatkan-kereta'), wesel1: document.getElementById('btn-switch-wesel1'),
                 wesel2: document.getElementById('btn-switch-wesel2'), wesel3: document.getElementById('btn-switch-wesel3'),
-                laporKrenceng: document.getElementById('btn-lapor-krenceng')
+                laporKrenceng: document.getElementById('btn-lapor-krenceng'),
+                ...Object.keys(signals).reduce((acc, id) => {
+                    acc[`toggle-${id}`] = document.getElementById(`btn-toggle-${id}`); return acc;
+                }, {})
             };
         }
 
@@ -269,113 +370,87 @@ document.addEventListener("DOMContentLoaded", function() {
                 const btn = document.getElementById(`btn-toggle-${id}`);
                 if (btn) btn.addEventListener("click", () => toggleSignal(id));
             });
-            buttons.wesel1.addEventListener('click', gerakkanWesel1);
-            buttons.wesel2.addEventListener('click', gerakkanWesel2);
-            buttons.wesel3.addEventListener('click', gerakkanWesel3);
-            buttons.keretaMasuk.addEventListener('click', () => {
-                if (gameState !== 'IDLE' || wesel1Posisi !== 'J2&J3' || wesel2Posisi !== 'J2' || !checkSignal('S_in')) {
-                    logActivity("GAGAL: Syarat kereta masuk tidak terpenuhi!", true); return;
-                }
+            buttons.wesel1.addEventListener('click', () => gerakkanWesel(gerakkanWesel1));
+            buttons.wesel2.addEventListener('click', () => gerakkanWesel(gerakkanWesel2));
+            buttons.wesel3.addEventListener('click', () => gerakkanWesel(gerakkanWesel3));
+
+            buttons.berangkatkanKereta.addEventListener('click', () => {
+                if(gameState === 'ANIMATING') return;
+                const isTutorialAction = gameState === 'TUTORIAL' && tutorialStep === 1;
+                if (!isTutorialAction && gameState !== 'READY_TO_DEPART') { return; }
+                if (!checkSignal('S2_out')) { logActivity("GAGAL: Sinyal S2 Keluar harus hijau!", true); return; }
+                
                 const event = schedule[currentEventIndex];
-                logActivity(`KA ${event.ka} (${event.loco}) mulai masuk ke Jalur 2...`);
-                gameState = 'ANIMATING'; updateTombol();
+                logActivity(`KA ${event.ka} (${event.loco}) diberangkatkan...`);
+                animateElement(train, rute.masuk_J2, 60, () => {
+                    train.style.visibility = 'hidden';
+                    signals.S2_out.light.setAttribute("fill", "#ef4444");
+                    updateStatusDashboard();
+                    gameState = 'TRAIN_DEPARTED';
+                    logActivity(`KA ${event.ka} telah berangkat. Lapor ke stasiun berikutnya.`);
+                    if (isTutorialAction) {
+                        advanceTutorial();
+                    }
+                    updateTombol();
+                });
+            });
+
+            buttons.laporKrenceng.addEventListener('click', () => {
+                if(gameState === 'ANIMATING') return;
+                const isTutorialAction = gameState === 'TUTORIAL' && tutorialStep === 2;
+                if (!isTutorialAction && gameState !== 'TRAIN_DEPARTED') return;
+
+                logActivity(`Laporan keberangkatan berhasil dikirim.`);
+                gameState = 'WAITING_FOR_NEXT_TRAIN';
+                currentEventIndex++;
+                populateScheduleBoard();
+                if (isTutorialAction) {
+                    advanceTutorial();
+                }
+                updateTombol();
+
+                if (currentEventIndex >= schedule.length) {
+                    logActivity("Semua jadwal telah selesai.");
+                    clearInterval(gameClockInterval);
+                }
+            });
+
+            buttons.keretaMasuk.addEventListener('click', () => {
+                if(gameState === 'ANIMATING') return;
+                const isTutorialAction = gameState === 'TUTORIAL' && tutorialStep === 5;
+                if (!isTutorialAction && gameState !== 'IDLE') return;
+                if (!checkSignal('S_in')) { logActivity("GAGAL: Sinyal Masuk harus hijau!", true); return; }
+
+                const event = schedule[currentEventIndex];
+                logActivity(`KA ${event.ka} (${event.loco}) mulai masuk...`);
                 train.style.visibility = "visible";
                 animateElement(train, rute.masuk_J2, 60, () => {
-                    setSignal('S_in', 'red');
+                    signals.S_in.light.setAttribute("fill", "#ef4444");
+                    updateStatusDashboard();
                     gameState = 'ARRIVED_ON_J2';
                     logActivity(`KA ${event.ka} telah tiba di Jalur 2.`);
                     currentEventIndex++;
                     populateScheduleBoard();
-                    updateTombol();
+                    if (isTutorialAction) {
+                        advanceTutorial();
+                    }
+                     updateTombol();
                 });
-            });
-            buttons.lepasLoko.addEventListener('click', () => {
-                if (gameState !== 'ARRIVED_ON_J2' || wesel3Posisi !== 'J1_SIDING' || !checkSignal('S2_langsir')) {
-                    logActivity("GAGAL: Syarat lepas lokomotif tidak terpenuhi!", true); return;
-                }
-                logActivity("Lokomotif dilepas dan bergerak ke sepur badug..."); gameState = 'ANIMATING'; updateTombol();
-                carriages.style.visibility = 'hidden';
-                locomotive.style.visibility = 'visible';
-                train.style.visibility = 'hidden';
-                animateElement(locomotive, rute.J2_to_siding, 25, () => {
-                    setSignal('S2_langsir', 'red');
-                    gameState = 'LOCO_ON_SIDING';
-                    logActivity("Lokomotif telah tiba di sepur badug.");
-                    updateTombol();
-                });
-            });
-            buttons.langsirKeluar.addEventListener('click', () => {
-                if (gameState !== 'LOCO_ON_SIDING' || wesel3Posisi !== 'J2_STRAIGHT' || wesel1Posisi !== 'J1' || !checkSignal('S1_langsir') || !checkSignal('S1_out')) {
-                    logActivity("GAGAL: Syarat langsir keluar tidak terpenuhi!", true); return;
-                }
-                logActivity("Lokomotif mulai langsir keluar stasiun via Jalur 1..."); gameState = 'ANIMATING'; updateTombol();
-                animateElement(locomotive, rute.siding_to_krenceng, 45, () => {
-                    setSignal('S1_langsir', 'red'); setSignal('S1_out', 'red');
-                    gameState = 'LOCO_SHUNTED';
-                    logActivity("Lokomotif berhasil langsir keluar.");
-                    updateTombol();
-                });
-            });
-            buttons.kembaliKeRangkaian.addEventListener('click', () => {
-                if (gameState !== 'LOCO_SHUNTED' || wesel1Posisi !== 'J2&J3' || wesel2Posisi !== 'J2' || !checkSignal('S_in')) {
-                    logActivity("GAGAL: Syarat lokomotif kembali tidak terpenuhi!", true); return;
-                }
-                logActivity("Lokomotif kembali untuk dirangkai..."); gameState = 'ANIMATING'; updateTombol();
-                animateElement(locomotive, rute.krenceng_to_J2_head, 60, () => {
-                    setSignal('S_in', 'red');
-                    locomotive.style.visibility = 'hidden';
-                    carriages.style.visibility = 'visible';
-                    train.style.visibility = 'visible';
-                    locomotive.querySelector('use').setAttribute('transform', 'rotate(180)');
-                    gameState = 'READY_TO_DEPART';
-                    logActivity("Kereta telah dirangkai dan siap berangkat.");
-                    updateTombol();
-                });
-            });
-            buttons.berangkatkanKereta.addEventListener('click', () => {
-                if (gameState !== 'READY_TO_DEPART' || wesel1Posisi !== 'J2&J3' || wesel2Posisi !== 'J2' || !checkSignal('S2_out')) {
-                    logActivity("GAGAL: Syarat keberangkatan tidak terpenuhi!", true); return;
-                }
-                const event = schedule[currentEventIndex];
-                logActivity(`KA ${event.ka} (${event.loco}) diberangkatkan menuju ${event.to}...`);
-                gameState = 'ANIMATING'; updateTombol();
-                animateElement(train, rute.masuk_J2, 60, () => {
-                    train.style.visibility = 'hidden';
-                    setSignal('S2_out', 'red');
-                    gameState = 'TRAIN_DEPARTED';
-                    logActivity(`KA ${event.ka} telah berangkat. Segera lapor stasiun berikutnya.`);
-                    updateTombol();
-                });
-            });
-            buttons.laporKrenceng.addEventListener('click', () => {
-                if (gameState !== 'TRAIN_DEPARTED') return;
-                logActivity("Laporan keberangkatan berhasil dikirim ke Stasiun Krenceng.");
-                gameState = 'WAITING_FOR_NEXT_TRAIN';
-                currentEventIndex++;
-                if (currentEventIndex < schedule.length) {
-                    const nextEvent = schedule[currentEventIndex];
-                    logActivity(`Menunggu kereta berikutnya (KA ${nextEvent.ka}) dari ${nextEvent.from} pukul ${nextEvent.time}.`);
-                } else {
-                    logActivity("Semua jadwal telah selesai. Simulasi berakhir.");
-                    clearInterval(gameClockInterval);
-                }
-                updateTombol();
-                populateScheduleBoard();
             });
         }
 
         // --- INISIALISASI GAME ---
         createButtons();
         attachEventListeners();
-        train.style.visibility = 'visible';
-        logActivity("Simulasi PPKA Stasiun Merak dimulai.");
         const firstEvent = schedule[0];
-        logActivity(`KA ${firstEvent.ka} (${firstEvent.loco}) tujuan ${firstEvent.to} siap diberangkatkan dari Jalur 2.`);
+        train.style.visibility = 'visible';
         setLocoType(firstEvent.loco);
-        updateStatusDashboard();
-        updateTombol();
-        populateScheduleBoard();
         initGameClock();
+        populateScheduleBoard();
+        updateStatusDashboard();
+        showTutorialStep(tutorialStep);
+        updateTombol();
+        logActivity("Simulasi PPKA Stasiun Merak dimulai.");
     }
 });
 
