@@ -1,222 +1,127 @@
-<svg width="1200" height="1600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <style>
-      .track-line { fill:none; stroke:#94a3b8; stroke-width:10; }
-      .track-ties { fill:none; stroke:#a16207; stroke-width:18; }
-      .wesel-path { transition: opacity 0.3s ease-in-out; }
-      .platform { fill:#e2e8f0; stroke:#94a3b8; stroke-width:2; }
-      .sig-bg { fill:#1e293b; rx:6; ry:6; }
-      .sig-light { stroke:#0f172a; stroke-width:1; fill: #ef4444; }
-      .txt { font-family: Arial, Helvetica, sans-serif; font-size:32px; fill:#0f172a; text-anchor: middle; }
-      .sig-label { font-family: 'Courier New', Courier, monospace; font-size: 28px; fill: #fff; font-weight: bold; text-anchor: middle; }
-      .hidden { opacity: 0; pointer-events: none; }
-      .loco-body { fill:#ef4444; stroke:#b91c1c; stroke-width:2; }
-      .loco-detail { fill:#334155; }
-      .carriage-body { fill:#3b82f6; stroke:#1e3a8a; stroke-width:2; }
-    </style>
-    
-    <!-- Locomotive Shapes -->
-    <g id="loco-cc201-shape">
-        <polygon class="loco-body" points="-40,-20 40,-20 50,0 40,20 -40,20 -50,0" />
-        <rect class="loco-detail" x="-30" y="-15" width="60" height="5" />
-        <rect class="loco-detail" x="-30" y="10" width="60" height="5" />
-        <circle class="loco-detail" cx="-25" cy="0" r="3" />
-        <circle class="loco-detail" cx="25" cy="0" r="3" />
-    </g>
-    <g id="loco-cc203-shape">
-        <polygon class="loco-body" points="-40,-20 40,-20 50,-10 50,10 40,20 -40,20" />
-        <rect class="loco-detail" x="-30" y="-12" width="60" height="4" />
-        <rect class="loco-detail" x="-30" y="8" width="60" height="4" />
-        <circle class="loco-detail" cx="-20" cy="0" r="2" />
-        <circle class="loco-detail" cx="20" cy="0" r="2" />
-    </g>
-    <g id="loco-cc206-shape">
-        <rect class="loco-body" x="-50" y="-20" width="100" height="40" rx="5"/>
-        <rect class="loco-detail" x="-40" y="-15" width="80" height="6" />
-        <rect class="loco-detail" x="-40" y="9" width="80" height="6" />
-        <circle class="loco-detail" cx="-30" cy="0" r="4" />
-        <circle class="loco-detail" cx="30" cy="0" r="4" />
-    </g>
-    <g id="carriage-shape">
-        <rect class="carriage-body" x="-45" y="-15" width="90" height="30" rx="2"/>
-        <circle class="loco-detail" cx="-30" cy="12" r="6" />
-        <circle class="loco-detail" cx="30" cy="12" r="6" />
-        <circle class="loco-detail" cx="-30" cy="-12" r="6" />
-        <circle class="loco-detail" cx="30" cy="-12" r="6" />
-    </g>
-    
-    <!-- Icons -->
-    <g id="harbor-icon" transform="scale(1.5) translate(-12, -12)">
-        <path d="M20 21c-1.39 0-2.78-.47-4-1.32c-2.44 1.71-5.56 1.71-8 0C6.78 20.53 5.39 21 4 21H3v-2h1c1.38 0 2.74-.35 4-.99a5.9 5.9 0 0 0 8 0c1.26.65 2.62.99 4 .99h1v2h-1zM3.95 17.02C3.96 17 3.98 17 4 17h1c.62 0 1.23-.15 1.8-.42l4.34-2.25a3 3 0 0 1 1.72 0l4.34 2.25c.57.27 1.18.42 1.8.42h1c.02 0 .04 0 .05-.02c2.19-.18 4-2.09 4-4.3V4h-2v8.72c0 1.05-.6 2-1.48 2.45l-4.34-2.25a3 3 0 0 1-1.72 0l-4.34 2.25C6.6 14.72 6 15.67 6 16.72V4H4v8.72c0 2.21 1.81 4.12 4 4.3zm12-13.02h2v3h-2zm-12 0h2v3H4z" fill="#334155"/>
-    </g>
-    <g id="station-building-icon" transform="scale(1.5) translate(-12, -12)">
-        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#334155"/>
-    </g>
-  </defs>
+<svg id="railway-map" width="800" height="600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg">
+                <!-- Railway Map SVG Content -->
+                <defs>
+                    <style>
+                        .track-line { fill:none; stroke:#94a3b8; stroke-width:10; }
+                        .track-ties { fill:none; stroke:#a16207; stroke-width:18; }
+                        .wesel-path { transition: opacity 0.3s ease-in-out; }
+                        .platform { fill:#e2e8f0; stroke:#94a3b8; stroke-width:2; }
+                        .sig-bg { fill:#1e293b; rx:6; ry:6; }
+                        .sig-light { stroke:#0f172a; stroke-width:1; fill: #ef4444; }
+                        .txt { font-family: Inter, Arial, sans-serif; font-size:32px; fill:#0f172a; text-anchor: middle; }
+                        .sig-label { font-family: 'JetBrains Mono', monospace; font-size: 28px; fill: #fff; font-weight: bold; text-anchor: middle; }
+                        .hidden { opacity: 0; pointer-events: none; }
+                        .loco-body { fill:#ef4444; stroke:#b91c1c; stroke-width:2; }
+                        .loco-detail { fill:#334155; }
+                        .carriage-body { fill:#3b82f6; stroke:#1e3a8a; stroke-width:2; }
+                    </style>
+                </defs>
 
-  <!-- Background -->
-  <rect x="0" y="0" width="1200" height="1600" fill="#f8fafc" />
+                <!-- Background -->
+                <rect x="0" y="0" width="1200" height="1600" fill="#f8fafc"/>
 
-  <!-- Track Ties (Base) -->
-  <path class="track-ties" d="M500,1550 L500,1250 M400,1100 L400,300 M600,1100 L600,300 M800,1100 L800,500"/>
-  
-  <!-- Track Lines (Base) -->
-  <path class="track-line" d="M495,1550 L495,1250 M505,1550 L505,1250 M395,1100 L395,300 M405,1100 L405,300 M595,1100 L595,300 M605,1100 L605,300 M795,1100 L795,500 M805,1100 L805,500"/>
-  
-  <!-- Connection Track (J1-J2 horizontal) -->
-  <path class="track-ties" d="M400,400 L600,400" />
-  <path class="track-line" d="M400,395 L600,395 M400,405 L600,405" />
-  
-  <!-- Siding Track (Sepur Badug) -->
-  <path class="track-ties" d="M400,300 L400,250" />
-  <path class="track-line" d="M395,300 L395,250 M405,300 L405,250" />
+                <!-- Track Infrastructure -->
+                <path class="track-ties" d="M500,1550 L500,1250 M400,1100 L400,300 M600,1100 L600,300 M800,1100 L800,500"/>
+                <path class="track-line" d="M495,1550 L495,1250 M505,1550 L505,1250 M395,1100 L395,300 M405,1100 L405,300 M595,1100 L595,300 M605,1100 L605,300 M795,1100 L795,500 M805,1100 L805,500"/>
+                
+                <!-- Connection Tracks -->
+                <path class="track-ties" d="M400,400 L600,400"/>
+                <path class="track-line" d="M400,395 L600,395 M400,405 L600,405"/>
+                
+                <!-- Siding Track -->
+                <path class="track-ties" d="M400,300 L400,250"/>
+                <path class="track-line" d="M395,300 L395,250 M405,300 L405,250"/>
 
-  <!-- WESEL PATHS (Sesuai dengan JS) -->
-  <!-- Wesel 1: Dari line utama ke J1 atau J2/J3 -->
-  <g id="wesel1-group">
-    <path id="W1_to_J1" class="track-ties wesel-path hidden" d="M500,1250 L400,1100" />
-    <path id="W1_to_J2J3" class="track-ties wesel-path" d="M500,1250 L600,1100 M500,1250 L800,1100" />
-  </g>
-  
-  <!-- Wesel 2: Di persimpangan J1-J2, arah ke J2 atau J3 -->
-  <g id="wesel2-group">
-    <path id="W2_to_J2" class="track-ties wesel-path" d="M400,1100 L600,1100" />
-    <path id="W2_to_J3" class="track-ties wesel-path hidden" d="M600,1100 L800,1100" />
-  </g>
-  
-  <!-- Wesel 3: Di ujung utara, lurus J2 atau belok ke siding J1 -->
-  <g id="wesel3-group">
-    <path id="W3_to_J2_straight" class="track-ties wesel-path" d="M600,400 L600,300" />
-    <path id="W3_to_J1_siding" class="track-ties wesel-path hidden" d="M600,400 L400,400 L400,300" />
-  </g>
+                <!-- Platforms -->
+                <rect class="platform" x="350" y="450" width="100" height="600" rx="0"/>
+                <text class="txt" x="400" y="500">Jalur 1</text>
+                
+                <rect class="platform" x="550" y="450" width="100" height="600" rx="0"/>
+                <text class="txt" x="600" y="500">Jalur 2</text>
+                
+                <rect class="platform" x="750" y="450" width="100" height="600" rx="0"/>
+                <text class="txt" x="800" y="500">Jalur 3</text>
+                
+                <rect class="platform" x="350" y="200" width="100" height="80" rx="0"/>
+                <text class="txt" x="400" y="245">Sepur Badug</text>
 
-  <!-- Platforms -->
-  <rect class="platform" x="350" y="450" width="100" height="600" rx="0"/>
-  <text class="txt" x="400" y="500">Jalur 1</text>
-  
-  <rect class="platform" x="550" y="450" width="100" height="600" rx="0"/>
-  <text class="txt" x="600" y="500">Jalur 2</text>
-  
-  <rect class="platform" x="750" y="450" width="100" height="600" rx="0"/>
-  <text class="txt" x="800" y="500">Jalur 3</text>
-  
-  <!-- Siding Platform -->
-  <rect class="platform" x="350" y="200" width="100" height="80" rx="0"/>
-  <text class="txt" x="400" y="245">Sepur Badug</text>
+                <!-- Signals -->
+                <g transform="translate(500,1350)">
+                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
+                    <circle id="signal-masuk" class="sig-light" cx="0" cy="-20" r="12"/>
+                    <text class="sig-label" y="15">3</text>
+                    <text class="txt" y="70">S-Masuk</text>
+                </g>
+                
+                <g transform="translate(400,350)">
+                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
+                    <circle id="signal-s1" class="sig-light" cx="0" cy="-20" r="12"/>
+                    <text class="sig-label" y="15">3</text>
+                    <text class="txt" y="70">S1-Keluar</text>
+                </g>
+                
+                <g transform="translate(600,350)">
+                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
+                    <circle id="signal-s2" class="sig-light" cx="0" cy="-20" r="12"/>
+                    <text class="sig-label" y="15">3</text>
+                    <text class="txt" y="70">S2-Keluar</text>
+                </g>
+                
+                <g transform="translate(800,550)">
+                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
+                    <circle id="signal-s3" class="sig-light" cx="0" cy="-20" r="12"/>
+                    <text class="sig-label" y="15">3</text>
+                    <text class="txt" y="70">S3-Keluar</text>
+                </g>
 
-  <!-- Harbor and Station Icons -->
-  <use xlink:href="#harbor-icon" transform="translate(500, 1450)"/>
-  <text class="txt" x="500" y="1500">Pelabuhan</text>
-  
-  <use xlink:href="#station-building-icon" transform="translate(950, 750)"/>
-  <text class="txt" x="950" y="800">Stasiun</text>
+                <!-- Wesel Indicators -->
+                <g transform="translate(500,1200)">
+                    <circle fill="#fbbf24" r="8"/>
+                    <text class="txt" y="40" style="font-size: 24px;">W1</text>
+                </g>
+                <g transform="translate(500,1050)">
+                    <circle fill="#fbbf24" r="8"/>
+                    <text class="txt" y="40" style="font-size: 24px;">W2</text>
+                </g>
+                <g transform="translate(500,420)">
+                    <circle fill="#fbbf24" r="8"/>
+                    <text class="txt" y="40" style="font-size: 24px;">W3</text>
+                </g>
 
-  <!-- SIGNALS (Sesuai dengan JS) -->
-  <!-- Sinyal Masuk -->
-  <g transform="translate(500,1350)">
-    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-    <circle id="S_in" class="sig-light" cx="0" cy="-20" r="12"/>
-    <text class="sig-label" y="15">3</text>
-    <text class="txt" y="70">S-Masuk</text>
-  </g>
-  
-  <!-- Sinyal Keluar J1 -->
-  <g transform="translate(400,350)">
-    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-    <circle id="S1_out" class="sig-light" cx="0" cy="-20" r="12"/>
-    <text class="sig-label" y="15">3</text>
-    <text class="txt" y="70">S1-Keluar</text>
-  </g>
-  
-  <!-- Sinyal Keluar J2 -->
-  <g transform="translate(600,350)">
-    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-    <circle id="S2_out" class="sig-light" cx="0" cy="-20" r="12"/>
-    <text class="sig-label" y="15">3</text>
-    <text class="txt" y="70">S2-Keluar</text>
-  </g>
-  
-  <!-- Sinyal Keluar J3 -->
-  <g transform="translate(800,550)">
-    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-    <circle id="S3_out" class="sig-light" cx="0" cy="-20" r="12"/>
-    <text class="sig-label" y="15">3</text>
-    <text class="txt" y="70">S3-Keluar</text>
-  </g>
-  
-  <!-- Sinyal Langsir 1 (ke siding) -->
-  <g transform="translate(500,420)">
-    <rect class="sig-bg" x="-15" y="-30" width="30" height="60"/>
-    <circle id="S1_langsir" class="sig-light" cx="0" cy="-15" r="8"/>
-    <text class="sig-label" y="10" style="font-size: 20px;">L1</text>
-    <text class="txt" y="60" style="font-size: 24px;">Langsir-1</text>
-  </g>
-  
-  <!-- Sinyal Langsir 2 (keluar dari siding) -->
-  <g transform="translate(400,220)">
-    <rect class="sig-bg" x="-15" y="-30" width="30" height="60"/>
-    <circle id="S2_langsir" class="sig-light" cx="0" cy="-15" r="8"/>
-    <text class="sig-label" y="10" style="font-size: 20px;">L2</text>
-    <text class="txt" y="60" style="font-size: 24px;">Langsir-2</text>
-  </g>
+                <!-- Labels -->
+                <text class="txt" x="100" y="100" style="font-size: 36px; font-weight: bold;">STASIUN MERAK</text>
+                <text class="txt" x="100" y="140" style="font-size: 24px;">Simulasi PPKA</text>
+                
+                <!-- Directional Arrows -->
+                <g transform="translate(500, 200)">
+                    <path d="M-20,0 L20,0 M10,-10 L20,0 L10,10" stroke="#334155" stroke-width="3" fill="none"/>
+                    <text class="txt" y="-25" style="font-size: 24px;">Ke Rangkasbitung</text>
+                </g>
+                
+                <g transform="translate(500, 1520)">
+                    <path d="M-20,0 L20,0 M-10,-10 L-20,0 L-10,10" stroke="#334155" stroke-width="3" fill="none"/>
+                    <text class="txt" y="40" style="font-size: 24px;">Ke Pelabuhan</text>
+                </g>
 
-  <!-- ROUTE PATHS (Sesuai dengan JS) -->
-  <!-- Route untuk kereta masuk ke J2 -->
-  <path id="route_masuk_J2" d="M500 1580 L 500 1250 L 400 1100 L 600 1100 L 600 900" fill="none" stroke="transparent"/>
-  
-  <!-- Route untuk loko lepas dari J2 ke siding J1 -->
-  <path id="route_J2_to_siding" d="M600 900 L 600 400 L 400 400 L 400 280" fill="none" stroke="transparent"/>
-  
-  <!-- Route untuk loko keluar dari siding -->
-  <path id="route_siding_to_krenceng" d="M400 280 L 400 200 L 300 200" fill="none" stroke="transparent"/>
-  
-  <!-- Route untuk loko kembali ke kepala J2 -->
-  <path id="route_krenceng_to_J2_head" d="M300 200 L 400 200 L 400 280 L 400 400 L 600 400 L 600 810" fill="none" stroke="transparent"/>
-
-  <!-- TRAIN GROUP -->
-  <g id="train" style="visibility: hidden;" transform="translate(600, 900)">
-    <g id="locomotive" transform="translate(0, 0)">
-      <use xlink:href="#loco-cc201-shape" id="current-loco-shape" /> 
-    </g>
-    <g id="carriages" transform="translate(-100, 0)">
-      <use xlink:href="#carriage-shape"/>
-      <use xlink:href="#carriage-shape" transform="translate(-100, 0)"/>
-      <use xlink:href="#carriage-shape" transform="translate(-200, 0)"/>
-    </g>
-  </g>
-  
-  <!-- LOCOMOTIVE ONLY (untuk langsir) -->
-  <g id="locomotive" style="visibility: hidden;" transform="translate(400, 280)">
-    <use xlink:href="#loco-cc201-shape" id="loco-only-shape" />
-  </g>
-
-  <!-- WESEL INDICATORS (Visual) -->
-  <g transform="translate(500,1200)">
-    <circle fill="#fbbf24" r="8"/>
-    <text class="txt" y="40" style="font-size: 24px;">W1</text>
-  </g>
-  <g transform="translate(500,1050)">
-    <circle fill="#fbbf24" r="8"/>
-    <text class="txt" y="40" style="font-size: 24px;">W2</text>
-  </g>
-  <g transform="translate(500,420)">
-    <circle fill="#fbbf24" r="8"/>
-    <text class="txt" y="40" style="font-size: 24px;">W3</text>
-  </g>
-
-  <!-- LABELS & MARKERS -->
-  <text class="txt" x="100" y="100" style="font-size: 36px; font-weight: bold;">STASIUN MERAK</text>
-  <text class="txt" x="100" y="140" style="font-size: 24px;">Simulasi PPKA</text>
-  
-  <!-- Arah ke Rangkasbitung -->
-  <g transform="translate(500, 200)">
-    <path d="M-20,0 L20,0 M10,-10 L20,0 L10,10" stroke="#334155" stroke-width="3" fill="none"/>
-    <text class="txt" y="-25" style="font-size: 24px;">Ke Rangkasbitung</text>
-  </g>
-  
-  <!-- Arah ke Pelabuhan -->
-  <g transform="translate(500, 1520)">
-    <path d="M-20,0 L20,0 M-10,-10 L-20,0 L-10,10" stroke="#334155" stroke-width="3" fill="none"/>
-    <text class="txt" y="40" style="font-size: 24px;">Ke Pelabuhan</text>
-  </g>
-</svg>
+                <!-- Train Elements -->
+                <g id="train-group" style="visibility: hidden;" transform="translate(600, 900)">
+                    <g id="locomotive">
+                        <rect class="loco-body" x="-40" y="-20" width="80" height="40" rx="5"/>
+                        <rect class="loco-detail" x="-30" y="-15" width="60" height="5"/>
+                        <rect class="loco-detail" x="-30" y="10" width="60" height="5"/>
+                        <circle class="loco-detail" cx="-25" cy="0" r="3"/>
+                        <circle class="loco-detail" cx="25" cy="0" r="3"/>
+                    </g>
+                    <g id="carriages" transform="translate(-100, 0)">
+                        <rect class="carriage-body" x="-45" y="-15" width="90" height="30" rx="2"/>
+                        <circle class="loco-detail" cx="-30" cy="12" r="6"/>
+                        <circle class="loco-detail" cx="30" cy="12" r="6"/>
+                        <rect class="carriage-body" x="-145" y="-15" width="90" height="30" rx="2" transform="translate(-100, 0)"/>
+                        <circle class="loco-detail" cx="-130" cy="12" r="6" transform="translate(-100, 0)"/>
+                        <circle class="loco-detail" cx="-70" cy="12" r="6" transform="translate(-100, 0)"/>
+                        <rect class="carriage-body" x="-245" y="-15" width="90" height="30" rx="2" transform="translate(-200, 0)"/>
+                        <circle class="loco-detail" cx="-230" cy="12" r="6" transform="translate(-200, 0)"/>
+                        <circle class="loco-detail" cx="-170" cy="12" r="6" transform="translate(-200, 0)"/>
+                    </g>
+                </g>
+            </svg>
