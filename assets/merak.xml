@@ -1,127 +1,463 @@
-<svg id="railway-map" width="800" height="600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg">
-                <!-- Railway Map SVG Content -->
-                <defs>
-                    <style>
-                        .track-line { fill:none; stroke:#94a3b8; stroke-width:10; }
-                        .track-ties { fill:none; stroke:#a16207; stroke-width:18; }
-                        .wesel-path { transition: opacity 0.3s ease-in-out; }
-                        .platform { fill:#e2e8f0; stroke:#94a3b8; stroke-width:2; }
-                        .sig-bg { fill:#1e293b; rx:6; ry:6; }
-                        .sig-light { stroke:#0f172a; stroke-width:1; fill: #ef4444; }
-                        .txt { font-family: Inter, Arial, sans-serif; font-size:32px; fill:#0f172a; text-anchor: middle; }
-                        .sig-label { font-family: 'JetBrains Mono', monospace; font-size: 28px; fill: #fff; font-weight: bold; text-anchor: middle; }
-                        .hidden { opacity: 0; pointer-events: none; }
-                        .loco-body { fill:#ef4444; stroke:#b91c1c; stroke-width:2; }
-                        .loco-detail { fill:#334155; }
-                        .carriage-body { fill:#3b82f6; stroke:#1e3a8a; stroke-width:2; }
-                    </style>
-                </defs>
+<svg id="railway-map" width="100%" height="100%" viewBox="0 0 1400 1200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <style>
+            .track-main { 
+                fill: none; 
+                stroke: #4a5568; 
+                stroke-width: 12; 
+                stroke-linecap: round; 
+            }
+            .track-rail-left { 
+                fill: none; 
+                stroke: #718096; 
+                stroke-width: 3; 
+            }
+            .track-rail-right { 
+                fill: none; 
+                stroke: #718096; 
+                stroke-width: 3; 
+            }
+            .track-ties { 
+                fill: none; 
+                stroke: #975a16; 
+                stroke-width: 20; 
+                stroke-dasharray: 15,25; 
+                stroke-linecap: round; 
+            }
+            .wesel-active { 
+                fill: #fbbf24; 
+                stroke: #d97706; 
+                stroke-width: 2; 
+            }
+            .wesel-inactive { 
+                fill: #9ca3af; 
+                stroke: #6b7280; 
+                stroke-width: 2; 
+            }
+            .platform { 
+                fill: #e2e8f0; 
+                stroke: #94a3b8; 
+                stroke-width: 3; 
+                rx: 8; 
+                ry: 8; 
+            }
+            .platform-edge { 
+                fill: none; 
+                stroke: #475569; 
+                stroke-width: 2; 
+                stroke-dasharray: 5,5; 
+            }
+            .signal-mast { 
+                fill: #334155; 
+                stroke: #1e293b; 
+                stroke-width: 2; 
+            }
+            .signal-bg { 
+                fill: #1e293b; 
+                stroke: #334155; 
+                stroke-width: 2; 
+                rx: 8; 
+                ry: 8; 
+            }
+            .signal-light { 
+                stroke: #0f172a; 
+                stroke-width: 2; 
+                fill: #ef4444; 
+                transition: fill 0.3s ease; 
+            }
+            .signal-light.active { 
+                fill: #22c55e; 
+                filter: drop-shadow(0 0 8px #22c55e); 
+            }
+            .signal-label { 
+                font-family: 'JetBrains Mono', monospace; 
+                font-size: 24px; 
+                fill: #f8fafc; 
+                font-weight: bold; 
+                text-anchor: middle; 
+                dominant-baseline: central; 
+            }
+            .track-label { 
+                font-family: 'Inter', Arial, sans-serif; 
+                font-size: 28px; 
+                fill: #1e293b; 
+                font-weight: 600; 
+                text-anchor: middle; 
+                dominant-baseline: central; 
+            }
+            .station-label { 
+                font-family: 'Inter', Arial, sans-serif; 
+                font-size: 36px; 
+                fill: #1e3a8a; 
+                font-weight: 700; 
+                text-anchor: middle; 
+                dominant-baseline: central; 
+            }
+            .direction-arrow { 
+                fill: none; 
+                stroke: #475569; 
+                stroke-width: 4; 
+                marker-end: url(#arrowhead); 
+            }
+            .building { 
+                fill: #f1f5f9; 
+                stroke: #94a3b8; 
+                stroke-width: 2; 
+                rx: 4; 
+                ry: 4; 
+            }
+            .building-roof { 
+                fill: #dc2626; 
+                stroke: #b91c1c; 
+                stroke-width: 1; 
+            }
+            .train-body { 
+                fill: #3b82f6; 
+                stroke: #1e40af; 
+                stroke-width: 3; 
+                rx: 4; 
+                ry: 4; 
+                transition: all 0.5s ease; 
+            }
+            .locomotive { 
+                fill: #dc2626; 
+                stroke: #b91c1c; 
+                stroke-width: 3; 
+            }
+            .locomotive-detail { 
+                fill: #fbbf24; 
+                stroke: #d97706; 
+                stroke-width: 1; 
+            }
+            .interactive:hover { 
+                opacity: 0.8; 
+                cursor: pointer; 
+            }
+            .wesel-indicator { 
+                fill: #fbbf24; 
+                stroke: #d97706; 
+                stroke-width: 2; 
+                animation: pulse 2s infinite; 
+            }
+            @keyframes pulse { 
+                0%, 100% { opacity: 1; } 
+                50% { opacity: 0.6; } 
+            }
+            .track-number { 
+                font-family: 'Inter', Arial, sans-serif; 
+                font-size: 32px; 
+                fill: #ffffff; 
+                font-weight: 700; 
+                text-anchor: middle; 
+                dominant-baseline: central; 
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3); 
+            }
+        </style>
+        
+        <!-- Arrow marker for direction indicators -->
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                    refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#475569" />
+            </marker>
+        </defs>
+        
+        <!-- Gradient definitions -->
+        <linearGradient id="platformGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#f1f5f9;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#e2e8f0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#cbd5e1;stop-opacity:1" />
+        </linearGradient>
+        
+        <linearGradient id="buildingGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+        </linearGradient>
+        
+        <!-- Filter for drop shadows -->
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+        </filter>
+    </defs>
 
-                <!-- Background -->
-                <rect x="0" y="0" width="1200" height="1600" fill="#f8fafc"/>
-
-                <!-- Track Infrastructure -->
-                <path class="track-ties" d="M500,1550 L500,1250 M400,1100 L400,300 M600,1100 L600,300 M800,1100 L800,500"/>
-                <path class="track-line" d="M495,1550 L495,1250 M505,1550 L505,1250 M395,1100 L395,300 M405,1100 L405,300 M595,1100 L595,300 M605,1100 L605,300 M795,1100 L795,500 M805,1100 L805,500"/>
-                
-                <!-- Connection Tracks -->
-                <path class="track-ties" d="M400,400 L600,400"/>
-                <path class="track-line" d="M400,395 L600,395 M400,405 L600,405"/>
-                
-                <!-- Siding Track -->
-                <path class="track-ties" d="M400,300 L400,250"/>
-                <path class="track-line" d="M395,300 L395,250 M405,300 L405,250"/>
-
-                <!-- Platforms -->
-                <rect class="platform" x="350" y="450" width="100" height="600" rx="0"/>
-                <text class="txt" x="400" y="500">Jalur 1</text>
-                
-                <rect class="platform" x="550" y="450" width="100" height="600" rx="0"/>
-                <text class="txt" x="600" y="500">Jalur 2</text>
-                
-                <rect class="platform" x="750" y="450" width="100" height="600" rx="0"/>
-                <text class="txt" x="800" y="500">Jalur 3</text>
-                
-                <rect class="platform" x="350" y="200" width="100" height="80" rx="0"/>
-                <text class="txt" x="400" y="245">Sepur Badug</text>
-
-                <!-- Signals -->
-                <g transform="translate(500,1350)">
-                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-                    <circle id="signal-masuk" class="sig-light" cx="0" cy="-20" r="12"/>
-                    <text class="sig-label" y="15">3</text>
-                    <text class="txt" y="70">S-Masuk</text>
-                </g>
-                
-                <g transform="translate(400,350)">
-                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-                    <circle id="signal-s1" class="sig-light" cx="0" cy="-20" r="12"/>
-                    <text class="sig-label" y="15">3</text>
-                    <text class="txt" y="70">S1-Keluar</text>
-                </g>
-                
-                <g transform="translate(600,350)">
-                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-                    <circle id="signal-s2" class="sig-light" cx="0" cy="-20" r="12"/>
-                    <text class="sig-label" y="15">3</text>
-                    <text class="txt" y="70">S2-Keluar</text>
-                </g>
-                
-                <g transform="translate(800,550)">
-                    <rect class="sig-bg" x="-20" y="-40" width="40" height="80"/>
-                    <circle id="signal-s3" class="sig-light" cx="0" cy="-20" r="12"/>
-                    <text class="sig-label" y="15">3</text>
-                    <text class="txt" y="70">S3-Keluar</text>
-                </g>
-
-                <!-- Wesel Indicators -->
-                <g transform="translate(500,1200)">
-                    <circle fill="#fbbf24" r="8"/>
-                    <text class="txt" y="40" style="font-size: 24px;">W1</text>
-                </g>
-                <g transform="translate(500,1050)">
-                    <circle fill="#fbbf24" r="8"/>
-                    <text class="txt" y="40" style="font-size: 24px;">W2</text>
-                </g>
-                <g transform="translate(500,420)">
-                    <circle fill="#fbbf24" r="8"/>
-                    <text class="txt" y="40" style="font-size: 24px;">W3</text>
-                </g>
-
-                <!-- Labels -->
-                <text class="txt" x="100" y="100" style="font-size: 36px; font-weight: bold;">STASIUN MERAK</text>
-                <text class="txt" x="100" y="140" style="font-size: 24px;">Simulasi PPKA</text>
-                
-                <!-- Directional Arrows -->
-                <g transform="translate(500, 200)">
-                    <path d="M-20,0 L20,0 M10,-10 L20,0 L10,10" stroke="#334155" stroke-width="3" fill="none"/>
-                    <text class="txt" y="-25" style="font-size: 24px;">Ke Rangkasbitung</text>
-                </g>
-                
-                <g transform="translate(500, 1520)">
-                    <path d="M-20,0 L20,0 M-10,-10 L-20,0 L-10,10" stroke="#334155" stroke-width="3" fill="none"/>
-                    <text class="txt" y="40" style="font-size: 24px;">Ke Pelabuhan</text>
-                </g>
-
-                <!-- Train Elements -->
-                <g id="train-group" style="visibility: hidden;" transform="translate(600, 900)">
-                    <g id="locomotive">
-                        <rect class="loco-body" x="-40" y="-20" width="80" height="40" rx="5"/>
-                        <rect class="loco-detail" x="-30" y="-15" width="60" height="5"/>
-                        <rect class="loco-detail" x="-30" y="10" width="60" height="5"/>
-                        <circle class="loco-detail" cx="-25" cy="0" r="3"/>
-                        <circle class="loco-detail" cx="25" cy="0" r="3"/>
-                    </g>
-                    <g id="carriages" transform="translate(-100, 0)">
-                        <rect class="carriage-body" x="-45" y="-15" width="90" height="30" rx="2"/>
-                        <circle class="loco-detail" cx="-30" cy="12" r="6"/>
-                        <circle class="loco-detail" cx="30" cy="12" r="6"/>
-                        <rect class="carriage-body" x="-145" y="-15" width="90" height="30" rx="2" transform="translate(-100, 0)"/>
-                        <circle class="loco-detail" cx="-130" cy="12" r="6" transform="translate(-100, 0)"/>
-                        <circle class="loco-detail" cx="-70" cy="12" r="6" transform="translate(-100, 0)"/>
-                        <rect class="carriage-body" x="-245" y="-15" width="90" height="30" rx="2" transform="translate(-200, 0)"/>
-                        <circle class="loco-detail" cx="-230" cy="12" r="6" transform="translate(-200, 0)"/>
-                        <circle class="loco-detail" cx="-170" cy="12" r="6" transform="translate(-200, 0)"/>
-                    </g>
-                </g>
-            </svg>
+    <!-- Background -->
+    <rect x="0" y="0" width="1400" height="1200" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+    
+    <!-- Station Buildings -->
+    <!-- Main Station Building -->
+    <rect class="building" x="50" y="350" width="300" height="150" rx="8" ry="8" 
+          fill="url(#buildingGradient)" filter="url(#shadow)"/>
+    <polygon class="building-roof" points="40,350 360,350 200,280" filter="url(#shadow)"/>
+    <text class="station-label" x="200" y="425">STASIUN MERAK</text>
+    <text class="track-label" x="200" y="455" style="font-size: 18px; fill: #64748b;">Simulasi PPKA</text>
+    
+    <!-- Platform Shelters -->
+    <rect class="building" x="450" y="380" width="80" height="240" fill="url(#buildingGradient)"/>
+    <rect class="building" x="650" y="380" width="80" height="240" fill="url(#buildingGradient)"/>
+    <rect class="building" x="850" y="380" width="80" height="240" fill="url(#buildingGradient)"/>
+    
+    <!-- Track Infrastructure -->
+    <!-- Main Track Bed -->
+    <rect x="400" y="480" width="600" height="40" fill="#8b7355" rx="4"/>
+    <rect x="400" y="580" width="600" height="40" fill="#8b7355" rx="4"/>
+    <rect x="400" y="680" width="600" height="40" fill="#8b7355" rx="4"/>
+    
+    <!-- Track Ties (Bantalan) -->
+    <path class="track-ties" d="M420,460 L420,540 M440,460 L440,540 M460,460 L460,540 M480,460 L480,540 M500,460 L500,540 M520,460 L520,540 M540,460 L540,540 M560,460 L560,540 M580,460 L580,540 M600,460 L600,540 M620,460 L620,540 M640,460 L640,540 M660,460 L660,540 M680,460 L680,540 M700,460 L700,540 M720,460 L720,540 M740,460 L740,540 M760,460 L760,540 M780,460 L780,540 M800,460 L800,540 M820,460 L820,540 M840,460 L840,540 M860,460 L860,540 M880,460 L880,540 M900,460 L900,540 M920,460 L920,540 M940,460 L940,540 M960,460 L960,540 M980,460 L980,540"/>
+    
+    <path class="track-ties" d="M420,560 L420,640 M440,560 L440,640 M460,560 L460,640 M480,560 L480,640 M500,560 L500,640 M520,560 L520,640 M540,560 L540,640 M560,560 L560,640 M580,560 L580,640 M600,560 L600,640 M620,560 L620,640 M640,560 L640,640 M660,560 L660,640 M680,560 L680,640 M700,560 L700,640 M720,560 L720,640 M740,560 L740,640 M760,560 L760,640 M780,560 L780,640 M800,560 L800,640 M820,560 L820,640 M840,560 L840,640 M860,560 L860,640 M880,560 L880,640 M900,560 L900,640 M920,560 L920,640 M940,560 L940,640 M960,560 L960,640"/>
+    
+    <path class="track-ties" d="M420,660 L420,740 M440,660 L440,740 M460,660 L460,740 M480,660 L480,740 M500,660 L500,740 M520,660 L520,740 M540,660 L540,740 M560,660 L560,740 M580,660 L580,740 M600,660 L600,740 M620,660 L620,740 M640,660 L640,740 M660,660 L660,740 M680,660 L680,740 M700,660 L700,740 M720,660 L720,740 M740,660 L740,740 M760,660 L760,740 M780,660 L780,740 M800,660 L800,740 M820,660 L820,740 M840,660 L840,740 M860,660 L860,740 M880,660 L880,740 M900,660 L900,740 M920,660 L920,740 M940,660 L940,740 M960,660 L960,740"/>
+    
+    <!-- Railway Tracks -->
+    <!-- Jalur 1 (Track 1) -->
+    <path class="track-main" d="M400,500 L1000,500"/>
+    <path class="track-rail-left" d="M400,494 L1000,494"/>
+    <path class="track-rail-right" d="M400,506 L1000,506"/>
+    
+    <!-- Jalur 2 (Track 2) -->
+    <path class="track-main" d="M400,600 L1000,600"/>
+    <path class="track-rail-left" d="M400,594 L1000,594"/>
+    <path class="track-rail-right" d="M400,606 L1000,606"/>
+    
+    <!-- Jalur 3 (Track 3) -->
+    <path class="track-main" d="M400,700 L1000,700"/>
+    <path class="track-rail-left" d="M400,694 L1000,694"/>
+    <path class="track-rail-right" d="M400,706 L1000,706"/>
+    
+    <!-- Connection tracks and turnouts -->
+    <!-- Entry track -->
+    <path class="track-main" d="M700,800 L700,720"/>
+    <path class="track-rail-left" d="M694,800 L694,720"/>
+    <path class="track-rail-right" d="M706,800 L706,720"/>
+    
+    <!-- Connecting tracks between platforms -->
+    <path class="track-main" d="M600,500 Q650,520 700,500 Q750,480 800,500"/>
+    <path class="track-main" d="M600,600 Q650,620 700,600 Q750,580 800,600"/>
+    <path class="track-main" d="M600,600 Q650,580 700,600 Q750,620 800,600"/>
+    
+    <!-- Siding track -->
+    <path class="track-main" d="M500,400 L800,400"/>
+    <path class="track-rail-left" d="M500,394 L800,394"/>
+    <path class="track-rail-right" d="M500,406 L800,406"/>
+    <path class="track-ties" d="M520,380 L520,420 M540,380 L540,420 M560,380 L560,420 M580,380 L580,420 M600,380 L600,420 M620,380 L620,420 M640,380 L640,420 M660,380 L660,420 M680,380 L680,420 M700,380 L700,420 M720,380 L720,420 M740,380 L740,420 M760,380 L760,420 M780,380 L780,420"/>
+    
+    <!-- Platforms -->
+    <!-- Platform 1 -->
+    <rect class="platform" x="420" y="440" width="560" height="40" fill="url(#platformGradient)" filter="url(#shadow)"/>
+    <path class="platform-edge" d="M420,480 L980,480"/>
+    <circle class="track-number" cx="470" cy="460" r="18" fill="#1e40af"/>
+    <text class="track-number" x="470" y="460">1</text>
+    <text class="track-label" x="500" y="430" style="font-size: 20px;">Platform 1</text>
+    
+    <!-- Platform 2 -->
+    <rect class="platform" x="420" y="540" width="560" height="40" fill="url(#platformGradient)" filter="url(#shadow)"/>
+    <path class="platform-edge" d="M420,580 L980,580"/>
+    <path class="platform-edge" d="M420,620 L980,620"/>
+    <circle class="track-number" cx="470" cy="560" r="18" fill="#dc2626"/>
+    <text class="track-number" x="470" y="560">2</text>
+    <text class="track-label" x="500" y="530" style="font-size: 20px;">Platform 2</text>
+    
+    <!-- Platform 3 -->
+    <rect class="platform" x="420" y="640" width="560" height="40" fill="url(#platformGradient)" filter="url(#shadow)"/>
+    <path class="platform-edge" d="M420,680 L980,680"/>
+    <circle class="track-number" cx="470" cy="660" r="18" fill="#059669"/>
+    <text class="track-number" x="470" y="660">3</text>
+    <text class="track-label" x="500" y="630" style="font-size: 20px;">Platform 3</text>
+    
+    <!-- Siding Platform -->
+    <rect class="platform" x="520" y="360" width="260" height="30" fill="url(#platformGradient)" filter="url(#shadow)"/>
+    <text class="track-label" x="650" y="320" style="font-size: 18px; fill: #7c3aed;">Sepur Badug</text>
+    
+    <!-- Railway Signals -->
+    <!-- Entry Signal -->
+    <g id="signal-masuk-group" transform="translate(700,850)" class="interactive">
+        <rect class="signal-mast" x="-4" y="-60" width="8" height="60"/>
+        <rect class="signal-bg" x="-25" y="-60" width="50" height="45"/>
+        <circle id="signal-masuk" class="signal-light" cx="0" cy="-38" r="15"/>
+        <text class="signal-label" x="0" y="-20">3</text>
+        <text class="track-label" x="0" y="20" style="font-size: 16px;">S-Masuk</text>
+    </g>
+    
+    <!-- Exit Signals -->
+    <g id="signal-s1-group" transform="translate(400,500)" class="interactive">
+        <rect class="signal-mast" x="-4" y="-40" width="8" height="40"/>
+        <rect class="signal-bg" x="-25" y="-40" width="50" height="35"/>
+        <circle id="signal-s1" class="signal-light" cx="0" cy="-22" r="12"/>
+        <text class="signal-label" x="0" y="-8" style="font-size: 20px;">3</text>
+        <text class="track-label" x="-60" y="0" style="font-size: 14px;">S1-Keluar</text>
+    </g>
+    
+    <g id="signal-s2-group" transform="translate(400,600)" class="interactive">
+        <rect class="signal-mast" x="-4" y="-40" width="8" height="40"/>
+        <rect class="signal-bg" x="-25" y="-40" width="50" height="35"/>
+        <circle id="signal-s2" class="signal-light" cx="0" cy="-22" r="12"/>
+        <text class="signal-label" x="0" y="-8" style="font-size: 20px;">3</text>
+        <text class="track-label" x="-60" y="0" style="font-size: 14px;">S2-Keluar</text>
+    </g>
+    
+    <g id="signal-s3-group" transform="translate(400,700)" class="interactive">
+        <rect class="signal-mast" x="-4" y="-40" width="8" height="40"/>
+        <rect class="signal-bg" x="-25" y="-40" width="50" height="35"/>
+        <circle id="signal-s3" class="signal-light" cx="0" cy="-22" r="12"/>
+        <text class="signal-label" x="0" y="-8" style="font-size: 20px;">3</text>
+        <text class="track-label" x="-60" y="0" style="font-size: 14px;">S3-Keluar</text>
+    </g>
+    
+    <!-- Turnout/Wesel Indicators -->
+    <!-- Wesel 1 -->
+    <g id="wesel-1-group" transform="translate(700,720)" class="interactive" data-wesel="1">
+        <circle class="wesel-indicator" cx="0" cy="0" r="12"/>
+        <text class="track-label" x="0" y="30" style="font-size: 16px;">W1</text>
+        <path class="track-main" d="M-20,-20 L20,20" stroke="#fbbf24" stroke-width="4"/>
+    </g>
+    
+    <!-- Wesel 2 -->
+    <g id="wesel-2-group" transform="translate(700,650)" class="interactive" data-wesel="2">
+        <circle class="wesel-indicator" cx="0" cy="0" r="12"/>
+        <text class="track-label" x="0" y="30" style="font-size: 16px;">W2</text>
+        <path class="track-main" d="M-20,-20 L20,20" stroke="#fbbf24" stroke-width="4"/>
+    </g>
+    
+    <!-- Wesel 3 -->
+    <g id="wesel-3-group" transform="translate(700,450)" class="interactive" data-wesel="3">
+        <circle class="wesel-indicator" cx="0" cy="0" r="12"/>
+        <text class="track-label" x="0" y="30" style="font-size: 16px;">W3</text>
+        <path class="track-main" d="M-20,-20 L20,20" stroke="#fbbf24" stroke-width="4"/>
+    </g>
+    
+    <!-- Directional Arrows -->
+    <!-- To Rangkasbitung -->
+    <g transform="translate(200,500)">
+        <path class="direction-arrow" d="M0,0 L80,0"/>
+        <text class="track-label" x="40" y="-20" style="font-size: 18px;">Ke Rangkasbitung</text>
+    </g>
+    
+    <!-- To Port -->
+    <g transform="translate(700,950)">
+        <path class="direction-arrow" d="M0,0 L0,-80"/>
+        <text class="track-label" x="0" y="25" style="font-size: 18px;">Ke Pelabuhan</text>
+    </g>
+    
+    <!-- Train Elements (Initially Hidden) -->
+    <g id="train-group" style="visibility: hidden;" transform="translate(700, 800)">
+        <!-- Locomotive -->
+        <g id="locomotive">
+            <rect class="locomotive" x="-50" y="-20" width="100" height="40" rx="6" filter="url(#shadow)"/>
+            <rect class="locomotive-detail" x="-40" y="-15" width="80" height="8" rx="2"/>
+            <rect class="locomotive-detail" x="-40" y="7" width="80" height="8" rx="2"/>
+            <circle class="locomotive-detail" cx="-30" cy="0" r="6"/>
+            <circle class="locomotive-detail" cx="30" cy="0" r="6"/>
+            <rect class="locomotive-detail" x="-10" y="-25" width="20" height="10" rx="2"/>
+            <!-- Pantograph -->
+            <path d="M-5,-25 L-15,-35 M5,-25 L15,-35" stroke="#374151" stroke-width="2"/>
+        </g>
+        
+        <!-- Carriages -->
+        <g id="carriages" transform="translate(-120, 0)">
+            <!-- Carriage 1 -->
+            <rect class="train-body" x="-50" y="-18" width="100" height="36" rx="4" filter="url(#shadow)"/>
+            <circle class="locomotive-detail" cx="-35" cy="15" r="8"/>
+            <circle class="locomotive-detail" cx="35" cy="15" r="8"/>
+            <rect x="-45" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+            <rect x="-20" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+            <rect x="5" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+            <rect x="30" y="-10" width="15" height="15" fill="#1e40af" rx="2"/>
+            
+            <!-- Carriage 2 -->
+            <g transform="translate(-120, 0)">
+                <rect class="train-body" x="-50" y="-18" width="100" height="36" rx="4" filter="url(#shadow)"/>
+                <circle class="locomotive-detail" cx="-35" cy="15" r="8"/>
+                <circle class="locomotive-detail" cx="35" cy="15" r="8"/>
+                <rect x="-45" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+                <rect x="-20" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+                <rect x="5" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+                <rect x="30" y="-10" width="15" height="15" fill="#1e40af" rx="2"/>
+            </g>
+            
+            <!-- Carriage 3 -->
+            <g transform="translate(-240, 0)">
+                <rect class="train-body" x="-50" y="-18" width="100" height="36" rx="4" filter="url(#shadow)"/>
+                <circle class="locomotive-detail" cx="-35" cy="15" r="8"/>
+                <circle class="locomotive-detail" cx="35" cy="15" r="8"/>
+                <rect x="-45" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+                <rect x="-20" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+                <rect x="5" y="-10" width="20" height="15" fill="#1e40af" rx="2"/>
+                <rect x="30" y="-10" width="15" height="15" fill="#1e40af" rx="2"/>
+            </g>
+        </g>
+    </g>
+    
+    <!-- Track Mile Markers -->
+    <g transform="translate(1050, 500)">
+        <rect x="-20" y="-30" width="40" height="60" fill="#334155" rx="4"/>
+        <text x="0" y="-5" class="track-label" style="fill: #f8fafc; font-size: 14px;">KM</text>
+        <text x="0" y="15" class="track-label" style="fill: #f8fafc; font-size: 16px; font-weight: 700;">108</text>
+    </g>
+    
+    <!-- Station Facilities -->
+    <!-- Waiting Areas -->
+    <rect class="building" x="1050" y="450" width="60" height="100" fill="url(#buildingGradient)"/>
+    <text x="1080" y="490" class="track-label" style="font-size: 12px;">Ruang</text>
+    <text x="1080" y="510" class="track-label" style="font-size: 12px;">Tunggu</text>
+    
+    <!-- Ticket Office -->
+    <rect class="building" x="1050" y="570" width="60" height="80" fill="url(#buildingGradient)"/>
+    <text x="1080" y="600" class="track-label" style="font-size: 12px;">Loket</text>
+    <text x="1080" y="620" class="track-label" style="font-size: 12px;">Tiket</text>
+    
+    <!-- Control Tower -->
+    <rect class="building" x="1150" y="400" width="80" height="120" fill="url(#buildingGradient)" filter="url(#shadow)"/>
+    <rect class="building" x="1160" y="370" width="60" height="40" fill="url(#buildingGradient)"/>
+    <text x="1190" y="450" class="track-label" style="font-size: 14px;">Menara</text>
+    <text x="1190" y="470" class="track-label" style="font-size: 14px;">PPKA</text>
+    
+    <!-- Electric Infrastructure -->
+    <g id="catenary-poles">
+        <rect x="445" y="320" width="4" height="120" fill="#6b7280"/>
+        <rect x="545" y="320" width="4" height="120" fill="#6b7280"/>
+        <rect x="645" y="320" width="4" height="120" fill="#6b7280"/>
+        <rect x="745" y="320" width="4" height="120" fill="#6b7280"/>
+        <rect x="845" y="320" width="4" height="120" fill="#6b7280"/>
+        <rect x="945" y="320" width="4" height="120" fill="#6b7280"/>
+        
+        <!-- Catenary wires -->
+        <path d="M450,330 L950,330" stroke="#374151" stroke-width="2" fill="none"/>
+        <path d="M450,340 L950,340" stroke="#374151" stroke-width="1" fill="none"/>
+    </g>
+    
+    <!-- Station Name Board -->
+    <g transform="translate(700, 250)">
+        <rect x="-150" y="-25" width="300" height="50" fill="#1e40af" rx="8" filter="url(#shadow)"/>
+        <text x="0" y="5" class="station-label" style="fill: #f8fafc; font-size: 24px;">STASIUN MERAK</text>
+    </g>
+    
+    <!-- Legend -->
+    <g transform="translate(50, 950)">
+        <rect x="0" y="0" width="300" height="200" fill="rgba(248,250,252,0.9)" stroke="#cbd5e1" stroke-width="2" rx="8"/>
+        <text x="10" y="20" class="track-label" style="font-size: 16px; font-weight: 700;">KETERANGAN:</text>
+        
+        <circle cx="20" cy="40" r="8" fill="#ef4444"/>
+        <text x="35" y="45" class="track-label" style="font-size: 12px;">Sinyal Merah (Berhenti)</text>
+        
+        <circle cx="20" cy="60" r="8" fill="#22c55e"/>
+        <text x="35" y="65" class="track-label" style="font-size: 12px;">Sinyal Hijau (Aman)</text>
+        
+        <circle cx="20" cy="80" r="8" fill="#fbbf24"/>
+        <text x="35" y="85" class="track-label" style="font-size: 12px;">Wesel (Penghubung Jalur)</text>
+        
+        <rect x="15" y="95" width="10" height="10" fill="#3b82f6"/>
+        <text x="35" y="105" class="track-label" style="font-size: 12px;">Kereta Penumpang</text>
+        
+        <rect x="15" y="115" width="10" height="10" fill="#dc2626"/>
+        <text x="35" y="125" class="track-label" style="font-size: 12px;">Lokomotif</text>
+        
+        <rect x="15" y="135" width="10" height="10" fill="url(#platformGradient)"/>
+        <text x="35" y="145" class="track-label" style="font-size: 12px;">Platform</text>
+        
+        <path d="M15,155 L25,155" stroke="#4a5568" stroke-width="4"/>
+        <text x="35" y="160" class="track-label" style="font-size: 12px;">Rel Kereta Api</text>
+        
+        <text x="10" y="185" class="track-label" style="font-size: 10px; fill: #64748b;">Simulasi PPKA - Stasiun Merak v2.0</text>
+    </g>
+</svg>
