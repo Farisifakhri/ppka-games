@@ -1,682 +1,314 @@
-// Railway Station Simulation - Fixed Basic Version
+// Railway Station Simulation - V7 with Randomized Schedule
 class RailwayStationSimulator {
     constructor() {
-        // Basic Game State
+        // Game State & Data
         this.gameState = 'LOADING';
-        this.tutorialStep = 0;
         this.gameTime = new Date();
-        this.gameInterval = null;
         this.currentEventIndex = 0;
-        this.isWaitingForEvent = false;
-        this.soundEnabled = true;
+        this.isWaitingForEvent = true;
+        this.trainLocation = null;
 
-        // Basic Configuration
-        this.config = {
-            GAME_SPEED: 800,           // ms per game minute
-            ANIMATION_SPEED: 3,        // seconds for train movements
-            MAX_LOG_ENTRIES: 50        // Maximum log entries to keep
+        // Configuration
+        this.config = { 
+            GAME_SPEED: 800, 
+            ANIMATION_SPEED_FACTOR: 150, 
+            MAX_LOG_ENTRIES: 50,
+            TIME_VARIATION_MINUTES: 5 // Kereta bisa lebih cepat/lambat hingga 5 menit
         };
 
-        // Simple State Management
-        this.weselStates = {
-            1: { position: 'J2_J3', isLocked: false },
-            2: { position: 'J2', isLocked: false },
-            3: { position: 'STRAIGHT', isLocked: false }
-        };
-
-        this.signalStates = {
-            'masuk': { active: false, aspect: 'RED' },
-            's1': { active: false, aspect: 'RED' },
-            's2': { active: false, aspect: 'RED' },
-            's3': { active: false, aspect: 'RED' }
-        };
-
-        // Basic Schedule
+        // Game Data
+        this.weselStates = { 1: { position: 'J2_J3' }, 2: { position: 'J2' }, 3: { position: 'STRAIGHT' } };
+        this.signalStates = { 'masuk': { aspect: 'RED' }, 's1': { aspect: 'RED' }, 's2': { aspect: 'RED' }, 's3': { aspect: 'RED' } };
+        
+        // Base schedule, will be randomized on init
         this.schedule = [
-            {
-                id: 'KA318_ARR',
-                type: 'ARRIVAL',
-                ka: '318',
-                time: '07:15',
-                from: 'Rangkasbitung',
-                to: 'Merak',
-                track: 2
-            },
-            {
-                id: 'KA319_DEP',
-                type: 'DEPARTURE',
-                ka: '319',
-                time: '09:00',
-                from: 'Merak',
-                to: 'Rangkasbitung',
-                track: 1
-            }
+            { id: 'KA318_ARR', type: 'ARRIVAL', ka: '318', time: '07:15', from: 'Rangkasbitung', to: 'Merak', track: 2 },
+            { id: 'KA319_DEP', type: 'DEPARTURE', ka: '319', time: '09:00', from: 'Merak', to: 'Rangkasbitung', track: 1 }
         ];
 
-        // Basic Tutorial Steps
-        this.tutorialSteps = [
-            {
-                id: 'welcome',
-                text: "Selamat datang di Simulasi Stasiun Merak! Anda bertugas sebagai PPKA."
-            },
-            {
-                id: 'prepare_wesel1',
-                text: "Atur Wesel 1 ke posisi 'Jalur 1/2' untuk rute kedatangan."
-            },
-            {
-                id: 'prepare_wesel2',
-                text: "Atur Wesel 2 ke 'Jalur 2' untuk jalur kedatangan KA 318."
-            },
-            {
-                id: 'signal_masuk',
-                text: "Beri aspek HIJAU pada Sinyal Masuk."
-            },
-            {
-                id: 'train_entry',
-                text: "Klik 'Kereta Masuk' untuk menerima kedatangan."
-            },
-            {
-                id: 'tutorial_complete',
-                text: "Tutorial selesai! Anda siap beroperasi."
-            }
-        ];
+        // SVG Elements & Animation Paths
+        this.svgDoc = null;
+        this.trainElement = null;
+        this.trackPaths = {
+            entryToTrack2: [ { x: 700, y: 950 }, { x: 700, y: 720 }, { x: 700, y: 600 }, { x: 550, y: 600 } ],
+            shuntTrack2To1: [ { x: 550, y: 600 }, { x: 800, y: 600 }, { x: 800, y: 500 }, { x: 550, y: 500 } ],
+            track1ToExit: [ { x: 550, y: 500 }, { x: 400, y: 500 }, { x: -200, y: 500 } ]
+        };
 
         this.init();
     }
 
-    // Basic Initialization
     init() {
         try {
-            this.setupEventListeners();
             this.initializeUI();
+            this.setupEventListeners();
             this.initGame();
-            
             console.log('Railway simulator initialized');
-            
         } catch (error) {
             console.error('Initialization error:', error);
             this.showErrorMessage('Gagal memuat simulasi');
         }
     }
 
-    // Basic Game Setup
     initGame() {
-        // Set initial time
+        this.randomizeSchedule(); // NEW: Randomize schedule times
         const [startHour, startMinute] = this.schedule[0].time.split(':');
         this.gameTime.setHours(parseInt(startHour), parseInt(startMinute) - 30, 0, 0);
-
         this.updateGameClock();
         this.updateStatusDisplays();
         this.updateScheduleDisplay();
-        this.updateButtonStates();
         this.startGameClock();
-
-        this.gameState = 'TUTORIAL';
-        this.showTutorial();
-
-        this.logActivity("Simulasi PPKA dimulai");
+        this.setGameState('WAITING');
+        this.logActivity("Simulasi PPKA dimulai dengan jadwal acak.");
     }
 
-    // Basic Game Clock
-    startGameClock() {
-        if (this.gameInterval) clearInterval(this.gameInterval);
-        
-        this.gameInterval = setInterval(() => {
-            if (this.gameState === 'PAUSED') return;
+    /**
+     * NEW: Adds a random variation to each event's time
+     */
+    randomizeSchedule() {
+        this.schedule.forEach(event => {
+            const maxVar = this.config.TIME_VARIATION_MINUTES;
+            const variation = Math.floor(Math.random() * (maxVar * 2 + 1)) - maxVar; // Random number between -maxVar and +maxVar
             
+            const scheduledMinutes = this.parseTime(event.time);
+            const realTotalMinutes = scheduledMinutes + variation;
+
+            const realHours = Math.floor(realTotalMinutes / 60);
+            const realMinutes = realTotalMinutes % 60;
+            
+            // Store the actual trigger time in a new property
+            event.realTime = `${String(realHours).padStart(2, '0')}:${String(realMinutes).padStart(2, '0')}`;
+        });
+        console.log("Jadwal dengan waktu acak:", this.schedule);
+    }
+
+    // --- Core Game Loop ---
+    startGameClock() {
+        setInterval(() => {
+            if (this.gameState === 'PAUSED') return;
             this.gameTime.setMinutes(this.gameTime.getMinutes() + 1);
             this.updateGameClock();
             this.checkScheduleEvents();
-            
         }, this.config.GAME_SPEED);
     }
 
-    updateGameClock() {
-        const timeString = this.formatTime(this.gameTime);
-        const clockElement = document.getElementById('game-clock-display');
-        if (clockElement) {
-            clockElement.textContent = `Pukul ${timeString}`;
-        }
-    }
-
-    // Basic Schedule Events
     checkScheduleEvents() {
-        if (this.currentEventIndex >= this.schedule.length || this.isWaitingForEvent) return;
+        if (this.currentEventIndex >= this.schedule.length || !this.isWaitingForEvent) return;
 
         const nextEvent = this.schedule[this.currentEventIndex];
-        const eventTime = this.parseTime(nextEvent.time);
+        const eventTime = this.parseTime(nextEvent.realTime); // Use the randomized time
         const currentTime = this.gameTime.getHours() * 60 + this.gameTime.getMinutes();
 
         if (currentTime >= eventTime) {
-            this.isWaitingForEvent = true;
-            this.handleScheduleEvent(nextEvent);
-        }
-    }
-
-    parseTime(timeString) {
-        const [hour, minute] = timeString.split(':');
-        return parseInt(hour) * 60 + parseInt(minute);
-    }
-
-    handleScheduleEvent(event) {
-        if (event.type === 'ARRIVAL') {
-            this.showNotification(`KA ${event.ka} dari ${event.from} siap masuk!`);
-            this.gameState = 'PREPARE_ARRIVAL';
-            this.updateButtonStates();
-        }
-    }
-
-    // Basic Signal Control
-    toggleSignal(signalId) {
-        if (this.gameState === 'ANIMATING') {
-            this.showNotification('Tunggu operasi selesai');
-            return;
-        }
-
-        const signal = this.signalStates[signalId];
-        if (!signal) return;
-
-        signal.active = !signal.active;
-        signal.aspect = signal.active ? 'GREEN' : 'RED';
-
-        this.updateSignalDisplay(signalId);
-        this.updateStatusDisplays();
-
-        const status = signal.active ? 'HIJAU' : 'MERAH';
-        this.logActivity(`Sinyal ${signalId.toUpperCase()} -> ${status}`);
-        
-        this.playSound('signal');
-        this.checkTutorialProgress('signal-' + signalId);
-    }
-
-    updateSignalDisplay(signalId) {
-        // Basic visual feedback for signals
-        const button = document.getElementById(`btn-signal-${signalId}`);
-        if (button) {
-            const signal = this.signalStates[signalId];
-            if (signal.active) {
-                button.classList.add('signal-green');
-                button.classList.remove('signal-red');
-            } else {
-                button.classList.add('signal-red');
-                button.classList.remove('signal-green');
+            this.isWaitingForEvent = false;
+            
+            if (nextEvent.type === 'ARRIVAL') {
+                this.showNotification(`KA ${nextEvent.ka} (jadwal ${nextEvent.time}) siap masuk dari ${nextEvent.from}!`);
+                this.setGameState('PREPARE_ARRIVAL');
+            } else if (nextEvent.type === 'DEPARTURE') {
+                if (this.trainLocation === nextEvent.track) {
+                    this.showNotification(`KA ${nextEvent.ka} (jadwal ${nextEvent.time}) siap berangkat dari Jalur ${nextEvent.track}.`);
+                    this.setGameState('READY_DEPARTURE');
+                } else {
+                    this.showNotification(`Info: KA ${nextEvent.ka} (jadwal ${nextEvent.time}) harus di Jalur ${nextEvent.track}. Lakukan langsiran.`);
+                    this.setGameState('AWAITING_SHUNT');
+                }
             }
         }
     }
 
-    // Basic Wesel Control
-    switchWesel(weselNum) {
-        if (this.gameState === 'ANIMATING') {
-            this.showNotification('Tunggu operasi selesai');
-            return;
-        }
-
-        const wesel = this.weselStates[weselNum];
-        if (wesel.isLocked) {
-            this.showNotification(`Wesel ${weselNum} terkunci`);
-            return;
-        }
-
-        const states = this.getWeselStates(weselNum);
-        const currentIndex = states.indexOf(wesel.position);
-        const nextIndex = (currentIndex + 1) % states.length;
-        
-        wesel.position = states[nextIndex];
-
-        const description = this.getWeselDescription(weselNum, wesel.position);
-        this.logActivity(`Wesel ${weselNum} -> ${description}`);
-        
-        this.updateStatusDisplays();
-        this.playSound('wesel');
-        this.checkTutorialProgress('wesel-' + weselNum);
-    }
-
-    // Basic Train Operations
+    // --- User Actions ---
     trainEnter() {
-        if (this.gameState !== 'PREPARE_ARRIVAL' && this.gameState !== 'TUTORIAL') {
-            this.showNotification('Tidak dapat menerima kereta sekarang');
-            return;
-        }
-
-        // Basic route validation
-        if (this.weselStates[1].position !== 'J2_J3') {
-            this.showNotification('GAGAL: Wesel 1 harus ke Jalur 1/2');
-            return;
-        }
-        if (this.weselStates[2].position !== 'J2') {
-            this.showNotification('GAGAL: Wesel 2 harus ke Jalur 2');
-            return;
-        }
-        if (!this.signalStates.masuk.active) {
-            this.showNotification('GAGAL: Sinyal Masuk harus hijau');
-            return;
-        }
+        if (this.gameState !== 'PREPARE_ARRIVAL') return;
+        if (this.weselStates[1].position !== 'J2_J3' || this.weselStates[2].position !== 'J2') { this.showNotification('GAGAL: Atur rute wesel ke Jalur 2', 'error'); return; }
+        if (this.signalStates['masuk'].aspect !== 'GREEN') { this.showNotification('GAGAL: Sinyal Masuk harus HIJAU', 'error'); return; }
 
         const event = this.schedule[this.currentEventIndex];
-        this.logActivity(`KA ${event.ka} masuk ke stasiun`);
+        this.logActivity(`Memulai pergerakan KA ${event.ka} masuk stasiun...`);
+        this.toggleSignal('masuk');
 
-        // Reset entry signal
-        this.signalStates.masuk.active = false;
-        this.signalStates.masuk.aspect = 'RED';
-        this.updateSignalDisplay('masuk');
-
-        this.gameState = 'TRAIN_ARRIVED';
-        this.updateButtonStates();
-        this.checkTutorialProgress('kereta-masuk');
-        this.playSound('success');
+        this.animateTrain(this.trackPaths.entryToTrack2, () => {
+            this.logActivity(`KA ${event.ka} telah tiba di Jalur ${event.track}.`);
+            this.trainLocation = event.track;
+            this.setGameState('TRAIN_ARRIVED');
+            this.currentEventIndex++;
+            this.updateScheduleDisplay();
+            this.isWaitingForEvent = true;
+        });
     }
 
     departTrain() {
-        if (this.gameState !== 'READY_DEPARTURE') {
-            this.showNotification('Kereta belum siap berangkat');
-            return;
-        }
-
+        if (this.gameState !== 'READY_DEPARTURE') return;
         const event = this.schedule[this.currentEventIndex];
-        this.logActivity(`KA ${event.ka} berangkat`);
+        const requiredSignal = `s${event.track}`;
+        if (this.signalStates[requiredSignal].aspect !== 'GREEN') { this.showNotification(`GAGAL: Sinyal Keluar Jalur ${event.track} (S${event.track}) harus HIJAU`, 'error'); return; }
 
-        this.gameState = 'DEPARTED';
-        this.updateButtonStates();
-        this.playSound('success');
+        this.logActivity(`Memberangkatkan KA ${event.ka} dari Jalur ${event.track}...`);
+        this.toggleSignal(requiredSignal);
+
+        this.animateTrain(this.trackPaths.track1ToExit, () => {
+            this.logActivity(`KA ${event.ka} telah berangkat menuju ${event.to}.`);
+            this.trainElement.style.visibility = 'hidden';
+            this.trainLocation = null;
+            this.setGameState('DEPARTED');
+            this.currentEventIndex++;
+            this.updateScheduleDisplay();
+            
+            if (this.currentEventIndex >= this.schedule.length) {
+                this.showNotification("Semua jadwal telah selesai!", "success");
+                this.setGameState("COMPLETED");
+            } else { this.isWaitingForEvent = true; }
+        });
     }
 
-    reportToNextStation() {
-        if (this.gameState !== 'DEPARTED') {
-            this.showNotification('Belum ada kereta untuk dilaporkan');
-            return;
-        }
-
-        this.logActivity("Laporan terkirim ke stasiun berikutnya");
+    shuntTrain() {
+        if (this.gameState !== 'AWAITING_SHUNT') return;
+        if (this.weselStates[1].position !== 'J1') { this.showNotification('GAGAL: Atur Wesel 1 ke "Lurus (ke Jalur 1)" untuk langsiran.', 'error'); return; }
+        if (this.weselStates[2].position !== 'J2') { this.showNotification('GAGAL: Atur Wesel 2 ke "Lurus (ke Jalur 2)" untuk langsiran.', 'error'); return; }
         
-        this.isWaitingForEvent = false;
-        this.currentEventIndex++;
-        this.updateScheduleDisplay();
+        this.logActivity(`Memulai proses langsiran dari Jalur 2 ke Jalur 1...`);
 
-        if (this.currentEventIndex >= this.schedule.length) {
-            this.gameState = 'COMPLETED';
-            this.showNotification('Semua operasi selesai!');
-        } else {
-            this.gameState = 'WAITING';
-        }
-
-        this.updateButtonStates();
+        this.animateTrain(this.trackPaths.shuntTrack2To1, () => {
+            const event = this.schedule[this.currentEventIndex];
+            this.logActivity(`Langsiran selesai. KA ${event.ka} sekarang berada di Jalur 1.`);
+            this.trainLocation = 1;
+            
+            if (this.trainLocation === event.track) {
+                this.showNotification(`KA ${event.ka} siap berangkat dari Jalur ${event.track}.`, 'success');
+                this.setGameState('READY_DEPARTURE');
+            }
+        });
     }
 
-    // Basic Audio System
-    playSound(soundName) {
-        if (!this.soundEnabled) return;
-        
-        try {
-            // Simple beep sounds
-            const frequencies = {
-                signal: 800,
-                wesel: 400,
-                success: 1000,
-                error: 200
+    // --- Animation & Controls ---
+    animateTrain(path, onComplete) {
+        if (!this.trainElement) { this.showErrorMessage("Error: Aset kereta tidak dapat ditemukan."); if (onComplete) onComplete(); return; }
+        this.setGameState('ANIMATING');
+        this.trainElement.style.visibility = 'visible';
+        let currentSegment = 0;
+        const move = () => {
+            if (currentSegment >= path.length - 1) { if (onComplete) onComplete(); return; }
+            const start = path[currentSegment], end = path[currentSegment + 1];
+            const distance = Math.hypot(end.x - start.x, end.y - start.y);
+            const duration = distance * (this.config.ANIMATION_SPEED_FACTOR / 100);
+            let startTime = null;
+            const step = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+                const ratio = Math.min(progress / duration, 1);
+                this.trainElement.setAttribute('transform', `translate(${start.x + (end.x - start.x) * ratio}, ${start.y + (end.y - start.y) * ratio})`);
+                if (progress < duration) { requestAnimationFrame(step); } 
+                else { currentSegment++; requestAnimationFrame(move); }
             };
-            
-            const freq = frequencies[soundName] || 600;
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
-            
-        } catch (error) {
-            console.warn('Audio not supported');
-        }
-    }
-
-    // Basic Button State Management
-    updateButtonStates() {
-        const buttons = document.querySelectorAll('.game-btn');
-        
-        // Reset all buttons
-        buttons.forEach(btn => {
-            btn.disabled = false;
-            btn.classList.remove('disabled');
-        });
-
-        // Tutorial mode
-        if (this.gameState === 'TUTORIAL') {
-            buttons.forEach(btn => btn.disabled = true);
-            return;
-        }
-
-        // Disable buttons based on game state
-        const disableMap = {
-            'WAITING': ['btn-kereta-masuk'],
-            'PREPARE_ARRIVAL': ['btn-berangkatkan', 'btn-lapor-stasiun'],
-            'TRAIN_ARRIVED': ['btn-kereta-masuk'],
-            'READY_DEPARTURE': ['btn-kereta-masuk'],
-            'DEPARTED': ['btn-kereta-masuk', 'btn-berangkatkan'],
-            'COMPLETED': ['btn-kereta-masuk', 'btn-berangkatkan', 'btn-lapor-stasiun']
+            requestAnimationFrame(step);
         };
-
-        const toDisable = disableMap[this.gameState] || [];
-        toDisable.forEach(btnId => {
-            const btn = document.getElementById(btnId);
-            if (btn) {
-                btn.disabled = true;
-                btn.classList.add('disabled');
-            }
-        });
+        requestAnimationFrame(move);
+    }
+    
+    toggleSignal(signalId) {
+        if (this.gameState === 'ANIMATING') return;
+        const signal = this.signalStates[signalId];
+        signal.aspect = (signal.aspect === 'RED') ? 'GREEN' : 'RED';
+        this.updateSignalDisplay(signalId);
+        this.updateStatusDisplays();
+        this.logActivity(`Sinyal ${signalId.toUpperCase()} -> ${signal.aspect}`);
     }
 
-    // Basic Status Display
-    updateStatusDisplays() {
-        this.updateWeselStatus();
-        this.updateSignalStatus();
-    }
-
-    updateWeselStatus() {
-        const container = document.getElementById('wesel-status-display');
-        if (!container) return;
-
-        container.innerHTML = '';
-        
-        for (let i = 1; i <= 3; i++) {
-            const wesel = this.weselStates[i];
-            const description = this.getWeselDescription(i, wesel.position);
-            
-            const div = document.createElement('div');
-            div.innerHTML = `Wesel ${i}: ${description}`;
-            container.appendChild(div);
-        }
-    }
-
-    updateSignalStatus() {
-        const container = document.getElementById('signal-status-display');
-        if (!container) return;
-
-        container.innerHTML = '';
-        
-        Object.entries(this.signalStates).forEach(([id, signal]) => {
-            const div = document.createElement('div');
-            div.innerHTML = `${id.toUpperCase()}: ${signal.aspect}`;
-            container.appendChild(div);
-        });
-    }
-
-    // Basic Schedule Display
-    updateScheduleDisplay() {
-        const display = document.getElementById('schedule-display');
-        if (!display) return;
-
-        let html = '<h3>Jadwal Kereta</h3>';
-        
-        this.schedule.forEach((event, index) => {
-            const status = index < this.currentEventIndex ? 'Selesai' : 
-                          index === this.currentEventIndex ? 'Aktif' : 'Terjadwal';
-            
-            html += `
-                <div class="schedule-item ${index === this.currentEventIndex ? 'active' : ''}">
-                    <strong>KA ${event.ka}</strong> - ${event.time}<br>
-                    ${event.from} → ${event.to}<br>
-                    <small>Status: ${status}</small>
-                </div>
-            `;
-        });
-
-        display.innerHTML = html;
-    }
-
-    // Basic Tutorial System
-    showTutorial() {
-        if (this.tutorialStep >= this.tutorialSteps.length) {
-            this.endTutorial();
-            return;
-        }
-
-        const step = this.tutorialSteps[this.tutorialStep];
-        
-        // Show tutorial message
-        this.showNotification(step.text, 'info', 8000);
-        
-        this.updateButtonStates();
-    }
-
-    nextTutorial() {
-        this.tutorialStep++;
-        if (this.tutorialStep >= this.tutorialSteps.length) {
-            this.endTutorial();
-        } else {
-            this.showTutorial();
-        }
-    }
-
-    checkTutorialProgress(action) {
-        if (this.gameState !== 'TUTORIAL') return;
-        
-        // Simple tutorial progression
-        if (this.tutorialStep < this.tutorialSteps.length - 1) {
-            setTimeout(() => this.nextTutorial(), 1000);
-        }
-    }
-
-    endTutorial() {
-        this.gameState = 'WAITING';
-        this.updateButtonStates();
-        this.showNotification("Tutorial selesai!");
-        this.logActivity("Tutorial selesai. Mode operasi aktif.");
-    }
-
-    // Basic Notification System
-    showNotification(message, type = 'info', duration = 5000) {
-        // Create simple notification
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            z-index: 1000;
-            max-width: 300px;
-        `;
-        notification.textContent = message;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, duration);
-    }
-
-    showErrorMessage(message) {
-        this.showNotification(message, 'error');
-        console.error('Game Error:', message);
-    }
-
-    // Basic Logging System
-    logActivity(message, type = 'info') {
-        const timestamp = this.formatTime(this.gameTime);
-        const logContainer = document.getElementById('activity-log');
-        
-        if (logContainer) {
-            const logItem = document.createElement('li');
-            logItem.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
-            
-            logContainer.insertBefore(logItem, logContainer.firstChild);
-            
-            // Keep only recent logs
-            while (logContainer.children.length > this.config.MAX_LOG_ENTRIES) {
-                logContainer.removeChild(logContainer.lastChild);
-            }
-        }
-
-        console.log(`[${timestamp}] ${message}`);
-    }
-
-    // Basic UI Initialization
-    initializeUI() {
-        this.updateScheduleDisplay();
+    switchWesel(weselNum) {
+        if (this.gameState === 'ANIMATING') return;
+        const wesel = this.weselStates[weselNum];
+        wesel.position = this.getWeselStates(weselNum)[(this.getWeselStates(weselNum).indexOf(wesel.position) + 1) % this.getWeselStates(weselNum).length];
+        this.logActivity(`Wesel ${weselNum} -> ${this.getWeselDescription(weselNum, wesel.position)}`);
         this.updateStatusDisplays();
     }
 
-    // Basic Event Listeners
-    setupEventListeners() {
-        // Signal buttons
-        ['masuk', 's1', 's2', 's3'].forEach(signal => {
-            const btn = document.getElementById(`btn-signal-${signal}`);
-            if (btn) {
-                btn.addEventListener('click', () => this.toggleSignal(signal));
-            }
-        });
-
-        // Wesel buttons
-        [1, 2, 3].forEach(wesel => {
-            const btn = document.getElementById(`btn-wesel-${wesel}`);
-            if (btn) {
-                btn.addEventListener('click', () => this.switchWesel(wesel));
-            }
-        });
-
-        // Action buttons
-        const actionButtons = {
-            'btn-kereta-masuk': () => this.trainEnter(),
-            'btn-berangkatkan': () => this.departTrain(),
-            'btn-lapor-stasiun': () => this.reportToNextStation(),
-            'btn-reset-game': () => this.resetGame()
-        };
-
-        Object.entries(actionButtons).forEach(([btnId, handler]) => {
-            const btn = document.getElementById(btnId);
-            if (btn) {
-                btn.addEventListener('click', handler);
-            }
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey) {
-                switch(e.key) {
-                    case '1':
-                    case '2':
-                    case '3':
-                        e.preventDefault();
-                        this.switchWesel(parseInt(e.key));
-                        break;
-                    case 'r':
-                        e.preventDefault();
-                        this.resetGame();
-                        break;
-                }
-            }
-        });
-    }
-
-    // Utility Functions
-    formatTime(date) {
-        return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-    }
-
-    getWeselStates(weselNum) {
-        const states = {
-            1: ['J1', 'J2_J3'],
-            2: ['J2', 'J3'], 
-            3: ['STRAIGHT', 'SIDING']
-        };
-        return states[weselNum] || [];
-    }
-
-    getWeselDescription(weselNum, position) {
-        const descriptions = {
-            1: { 'J1': 'Jalur 1', 'J2_J3': 'Jalur 1/2' },
-            2: { 'J2': 'Jalur 2', 'J3': 'Jalur 1/3' },
-            3: { 'STRAIGHT': 'Lurus', 'SIDING': 'Percabangan' }
-        };
-        return descriptions[weselNum]?.[position] || 'Unknown';
-    }
-
-    // Basic Game Reset
-    resetGame() {
-        if (confirm('Reset game? Progress akan hilang.')) {
-            // Stop interval
-            if (this.gameInterval) {
-                clearInterval(this.gameInterval);
-            }
-            
-            // Reset states
-            this.gameTime = new Date();
-            this.currentEventIndex = 0;
-            this.tutorialStep = 0;
-            this.gameState = 'TUTORIAL';
-            this.isWaitingForEvent = false;
-            
-            // Reset wesel positions
-            this.weselStates[1].position = 'J2_J3';
-            this.weselStates[2].position = 'J2';
-            this.weselStates[3].position = 'STRAIGHT';
-            
-            // Reset signals
-            Object.keys(this.signalStates).forEach(key => {
-                this.signalStates[key].active = false;
-                this.signalStates[key].aspect = 'RED';
-                this.updateSignalDisplay(key);
-            });
-
-            // Clear log
-            const logContainer = document.getElementById('activity-log');
-            if (logContainer) {
-                logContainer.innerHTML = '';
-            }
-
-            // Restart
-            this.initGame();
-            this.showNotification('Game berhasil direset');
-        }
-    }
-
-    // Simple state transitions for basic game flow
-    advanceGameState() {
-        switch(this.gameState) {
-            case 'TRAIN_ARRIVED':
-                this.gameState = 'READY_DEPARTURE';
-                this.logActivity("Kereta siap untuk berangkat");
-                break;
-        }
+    // --- UI & State Management ---
+    setGameState(newState) {
+        this.gameState = newState;
+        const indicator = document.getElementById('game-state-indicator');
+        indicator.textContent = newState.replace('_', ' ');
+        indicator.classList.toggle('animating', newState === 'ANIMATING');
         this.updateButtonStates();
     }
 
-    // Cleanup
-    destroy() {
-        if (this.gameInterval) {
-            clearInterval(this.gameInterval);
-        }
+    updateButtonStates() {
+        const isAnimating = this.gameState === 'ANIMATING';
+        document.querySelectorAll('.game-btn').forEach(btn => btn.disabled = isAnimating);
     }
+    
+    initializeUI() {
+        const createButtons = (containerSelector, buttons) => {
+            document.querySelector(containerSelector).innerHTML = buttons.map(btn => `<button class="game-btn ${btn.class || ''}" id="${btn.id}"><i class="${btn.icon}"></i> ${btn.label}</button>`).join('');
+        };
+        createButtons('.control-section:nth-child(1) .button-grid', [
+            { id: 'btn-signal-masuk', icon: 'fas fa-arrow-down', label: 'S. Masuk', class: 'signal-red' },
+            { id: 'btn-signal-s1', icon: 'fas fa-arrow-up', label: 'S1', class: 'signal-red' }, { id: 'btn-signal-s2', icon: 'fas fa-arrow-up', label: 'S2', class: 'signal-red' }, { id: 'btn-signal-s3', icon: 'fas fa-arrow-up', label: 'S3', class: 'signal-red' }
+        ]);
+        createButtons('.control-section:nth-child(2) .button-grid', [
+            { id: 'btn-wesel-1', icon: 'fas fa-random', label: 'Wesel 1' }, { id: 'btn-wesel-2', icon: 'fas fa-random', label: 'Wesel 2' }, { id: 'btn-wesel-3', icon: 'fas fa-random', label: 'Wesel 3' }
+        ]);
+        createButtons('.control-section:nth-child(3) .button-grid', [
+             { id: 'btn-kereta-masuk', icon: 'fas fa-train', label: 'Kereta Masuk' }, { id: 'btn-kereta-berangkat', icon: 'fas fa-sign-out-alt', label: 'Berangkatkan' }, { id: 'btn-kereta-langsir', icon: 'fas fa-exchange-alt', label: 'Langsir' }
+        ]);
+        const svgObject = document.getElementById('stasiun');
+        svgObject.addEventListener('load', () => {
+            this.svgDoc = svgObject.contentDocument;
+            this.trainElement = this.svgDoc.getElementById('train-group');
+            if (!this.trainElement) this.showErrorMessage('Aset kereta tidak dapat ditemukan di peta.');
+        });
+    }
+
+    setupEventListeners() {
+        document.getElementById('control-panel').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn || !btn.id) return;
+            const parts = btn.id.split('-'), category = parts[1], name = parts[2];
+            if (category === 'signal') this.toggleSignal(name);
+            else if (category === 'wesel') this.switchWesel(parseInt(name));
+            else if (category === 'kereta') {
+                if (name === 'masuk') this.trainEnter();
+                if (name === 'berangkat') this.departTrain();
+                if (name === 'langsir') this.shuntTrain();
+            }
+        });
+    }
+
+    // --- UI Display Updates ---
+    updateGameClock() { document.getElementById('game-clock-display').textContent = `Pukul ${this.formatTime(this.gameTime)}`; }
+    updateSignalDisplay(id) {
+        const btn = document.getElementById(`btn-signal-${id}`);
+        if(btn) { btn.classList.toggle('signal-green', this.signalStates[id].aspect === 'GREEN'); btn.classList.toggle('signal-red', this.signalStates[id].aspect === 'RED'); }
+    }
+    updateStatusDisplays() {
+        document.getElementById('wesel-status-display').innerHTML = Object.entries(this.weselStates).map(([num, state]) => `<div>Wesel ${num}: <strong>${this.getWeselDescription(parseInt(num), state.position)}</strong></div>`).join('');
+        document.getElementById('signal-status-display').innerHTML = Object.entries(this.signalStates).map(([id, state]) => `<div>${id.toUpperCase()}: <strong class="${state.aspect.toLowerCase()}">${state.aspect}</strong></div>`).join('');
+    }
+    updateScheduleDisplay() {
+        document.getElementById('schedule-display').innerHTML = this.schedule.map((event, index) => {
+            let status = 'Terjadwal';
+            if (index < this.currentEventIndex) status = 'Selesai';
+            else if (index === this.currentEventIndex && !this.isWaitingForEvent) status = 'Aktif';
+            return `<div class="schedule-item ${status === 'Aktif' ? 'active' : ''}"><strong>KA ${event.ka}</strong> - ${event.time} <i>(Aktual: ${event.realTime})</i><br><span>${event.from} → ${event.to}</span><br><small>Status: ${status}</small></div>`;
+        }).join('');
+    }
+
+    // --- Utility & Logging ---
+    logActivity(msg) {
+        const log = document.getElementById('activity-log');
+        log.insertAdjacentHTML('afterbegin', `<li><strong>[${this.formatTime(this.gameTime)}]</strong> ${msg}</li>`);
+        if (log.children.length > this.config.MAX_LOG_ENTRIES) log.removeChild(log.lastChild);
+    }
+    showNotification(msg, type = 'info', duration = 4000) {
+        const container = document.getElementById('notification-container'), notification = document.createElement('div');
+        notification.className = `notification ${type}`; notification.innerHTML = `<span>${msg}</span>`;
+        container.appendChild(notification);
+        setTimeout(() => notification.remove(), duration);
+    }
+    showErrorMessage(msg) { this.showNotification(msg, 'error', 6000); console.error('Game Error:', msg); }
+    formatTime = (date) => `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    parseTime = (str) => { const [h, m] = str.split(':'); return parseInt(h) * 60 + parseInt(m); };
+    getWeselStates = (num) => ({ 1: ['J1', 'J2_J3'], 2: ['J2', 'J3'], 3: ['STRAIGHT', 'SIDING'] }[num] || []);
+    getWeselDescription = (num, pos) => ({ 1: { 'J1': 'Lurus (ke Jalur 1)', 'J2_J3': 'Belok (ke Jalur 2/3)' }, 2: { 'J2': 'Lurus (ke Jalur 2)', 'J3': 'Belok (ke Jalur 3)' }, 3: { 'STRAIGHT': 'Lurus', 'SIDING': 'Sepur Badug' } }[num]?.[pos] || 'Unknown');
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing Railway Station Simulator...');
-    window.railwayGame = new RailwayStationSimulator();
-});
-
-// Error handler
-window.addEventListener('error', (e) => {
-    console.error('Error:', e.error);
-    if (window.railwayGame) {
-        window.railwayGame.showErrorMessage(`Error: ${e.message}`);
-    }
-});
-
-// Cleanup on unload
-window.addEventListener('beforeunload', () => {
-    if (window.railwayGame) {
-        window.railwayGame.destroy();
-    }
-});
+document.addEventListener('DOMContentLoaded', () => { window.railwayGame = new RailwayStationSimulator(); });
